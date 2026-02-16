@@ -12,47 +12,62 @@ use Illuminate\Support\Facades\DB;
 class AbsensiController extends Controller
 {
     /**
-     * Menampilkan daftar siswa berdasarkan kelas (Halaman Input Satu Pintu).
+     * TAMPILAN: Pilih Kelas
+     * File: resources/views/guru/absensi/select.blade.php
      */
-    public function showByKelas($kelas)
+    public function selectClass()
     {
-        // Mengambil data siswa berdasarkan kelas yang dipilih
-        $siswas = Siswa::where('kelas', $kelas)
+        return view('guru.absensi.select');
+    }
+
+    /**
+     * TAMPILAN: Form Absensi Siswa
+     * File: resources/views/guru/absensi/index.blade.php
+     */
+    public function create(Request $request)
+    {
+        $request->validate([
+            'tingkat' => 'required',
+            'jurusan' => 'required'
+        ]);
+
+        $kelas_nama = $request->tingkat . ' ' . $request->jurusan;
+        
+        $siswas = Siswa::where('kelas', $kelas_nama)
                     ->orderBy('nama', 'asc')
                     ->get();
 
-        // Jika kelas tidak ditemukan/kosong, tetap kirim array kosong agar count() tidak error
-        return view('guru.presensi.index', [
+        // Mengarah ke folder absensi, bukan materi
+        return view('guru.absensi.index', [
             'siswas' => $siswas,
-            'kelas_nama' => $kelas
+            'kelas_nama' => $kelas_nama
         ]);
     }
 
     /**
-     * Menyimpan data Jurnal Materi dan Presensi Siswa secara atomik.
+     * PROSES: Simpan Jurnal & Absensi
      */
     public function storeJurnal(Request $request)
     {
         $request->validate([
-            'judul_materi' => 'required|string|max:255',
-            'pembahasan'   => 'required',
-            'kelas'        => 'required',
-            'absen'        => 'required|array',
+            'judul_materi'   => 'required|string|max:255',
+            'pembahasan'     => 'required',
+            'mata_pelajaran' => 'required|string|max:255',
+            'kelas'          => 'required',
+            'absen'          => 'required|array',
         ]);
 
         try {
             DB::transaction(function () use ($request) {
-                // 1. Simpan ke tabel Materi
                 $materi = Materi::create([
                     'guru_id'        => Auth::guard('guru')->id(),
                     'judul_materi'   => $request->judul_materi,
                     'pembahasan'     => $request->pembahasan,
-                    'mata_pelajaran' => Auth::guard('guru')->user()->mata_pelajaran,
+                    'mata_pelajaran' => $request->mata_pelajaran,
                     'kelas'          => $request->kelas,
                     'tanggal'        => now()->format('Y-m-d'),
                 ]);
 
-                // 2. Simpan ke tabel Absensi
                 foreach ($request->absen as $siswa_id => $status) {
                     Absensi::create([
                         'materi_id' => $materi->id,
@@ -66,33 +81,24 @@ class AbsensiController extends Controller
             return redirect()->route('guru.dashboard')->with('success', 'Presensi berhasil disimpan!');
 
         } catch (\Exception $e) {
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal: ' . $e->getMessage());
         }
     }
 
     /**
-     * Menampilkan Riwayat Absensi (Arsip).
+     * TAMPILAN: Riwayat Materi (Arsip)
+     * File: resources/views/guru/materi/index.blade.php
      */
-    public function index(Request $request) 
+    public function index() 
     {
-        $riwayat = Absensi::with(['siswa', 'materi'])
-            ->whereHas('materi', function($query) {
-                $query->where('guru_id', Auth::guard('guru')->id());
-            })
-            ->when($request->search, function($query, $search) {
-                $query->whereHas('siswa', function($q) use ($search) {
-                    $q->where('nama', 'like', "%{$search}%");
-                });
-            })
+        $riwayatMateri = Materi::with(['presensis'])
+            ->where('guru_id', Auth::guard('guru')->id())
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
 
-        // PERBAIKAN FATAL: Mengirim array kosong untuk $siswas agar count() di Blade tidak error
-        // Karena view riwayat biasanya memakai layout yang sama atau baris kode yang mirip
-        return view('guru.absensi.index', [
-            'riwayat'    => $riwayat,
-            'siswas'     => collect([]), // Kirim collection kosong agar count($siswas) jadi 0, bukan error
-            'kelas_nama' => 'Arsip'
+        // Mengarah ke folder materi
+        return view('guru.materi.index', [
+            'riwayatMateri' => $riwayatMateri
         ]);
     }
 }

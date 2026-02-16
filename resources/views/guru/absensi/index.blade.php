@@ -2,12 +2,11 @@
 
 @section('title', 'Input Presensi & Jurnal')
 @section('header_title', 'Presensi Kelas ' . $kelas_nama)
-@section('header_subtitle', 'Isi jurnal materi pembelajaran dan absen siswa secara bersamaan.')
 
 @section('content')
 {{-- Menampilkan Pesan Error Validasi Jika Ada --}}
 @if($errors->any())
-    <div class="mb-6 bg-rose-50 border border-rose-100 text-rose-600 px-6 py-4 rounded-3xl text-sm font-bold animate-shake">
+    <div class="mb-6 bg-rose-50 border border-rose-100 text-rose-600 px-6 py-4 rounded-3xl text-sm font-bold">
         <ul class="list-disc list-inside">
             @foreach($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -16,7 +15,8 @@
     </div>
 @endif
 
-<form action="{{ route('guru.absensi.storeJurnal') }}" method="POST">
+{{-- PERBAIKAN: Action diganti ke guru.presensi.storeJurnal --}}
+<form action="{{ route('guru.presensi.storeJurnal') }}" method="POST">
     @csrf
     {{-- Hidden fields untuk data pendukung --}}
     <input type="hidden" name="kelas" value="{{ $kelas_nama }}">
@@ -118,9 +118,7 @@
                 </table>
             </div>
 
-            {{-- TOMBOL SIMPAN --}}
             <div class="p-10 bg-slate-50/50 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-50">
-                <p class="text-[11px] text-slate-400 font-medium italic">Pastikan seluruh data jurnal dan presensi sudah benar sebelum menyimpan.</p>
                 <button type="submit" class="w-full md:w-auto bg-slate-900 text-white px-12 py-4 rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-blue-600 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-slate-200">
                     Simpan Jurnal & Presensi
                 </button>

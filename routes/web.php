@@ -7,7 +7,6 @@ use App\Http\Controllers\MateriController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\SiswaController;
 
-// 1. Redirect Halaman Utama
 Route::get('/', function () {
     if (auth()->guard('guru')->check()) {
         return redirect()->route('guru.dashboard');
@@ -15,26 +14,27 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// 2. Grouping Route Guru
 Route::prefix('guru')->group(function () {
     
-    // Guest Only: Khusus untuk guru yang BELUM login
+    // Guest Only
     Route::middleware('guest:guru')->group(function () {
-        // Diberikan nama 'login' agar dikenali otomatis oleh middleware auth Laravel
         Route::get('/login', [GuruAuthController::class, 'loginForm'])->name('login');
-        Route::get('/login-guru', [GuruAuthController::class, 'loginForm'])->name('guru.login'); // Alias tetap ada
         Route::post('/login', [GuruAuthController::class, 'login'])->name('guru.login.submit');
     });
 
-    // Auth Only: Khusus untuk guru yang SUDAH login
+    // Auth Only
     Route::middleware('auth:guru')->group(function () {
         
-        // Dashboard
         Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('guru.dashboard');
         
-        // --- FITUR SATU PINTU ---
-        Route::get('/presensi/kelas/{kelas}', [AbsensiController::class, 'showByKelas'])->name('guru.presensi.kelas');
-        Route::post('/jurnal/store', [AbsensiController::class, 'storeJurnal'])->name('guru.absensi.storeJurnal');
+        // --- FITUR PRESENSI (Folder: guru/absensi) ---
+        Route::prefix('presensi')->name('guru.presensi.')->group(function () {
+            // Ini yang dipanggil Sidebar (Pilih Kelas)
+            Route::get('/pilih-kelas', [AbsensiController::class, 'selectClass'])->name('select');
+            // Ini yang dipanggil Form Select (Input Jurnal)
+            Route::get('/isi-jurnal', [AbsensiController::class, 'create'])->name('create');
+            Route::post('/store', [AbsensiController::class, 'storeJurnal'])->name('storeJurnal');
+        });
 
         // --- MANAJEMEN SISWA ---
         Route::prefix('siswa')->name('guru.siswa.')->group(function () {
@@ -43,18 +43,19 @@ Route::prefix('guru')->group(function () {
             Route::delete('/{id}', [SiswaController::class, 'destroy'])->name('destroy');
         });
 
-        // --- ARSIP MATERI ---
-        Route::prefix('materi')->name('guru.materi.')->group(function () {
-            Route::get('/', [MateriController::class, 'index'])->name('index'); 
+        // --- ARSIP & RIWAYAT (Folder: guru/materi) ---
+        // Perbaikan typo: 'materai' jadi 'materi'
+        Route::get('/riwayat-materi', [AbsensiController::class, 'index'])->name('guru.materi.index');
+        // Alias tambahan supaya link lama di sidebar lo (guru.absensi.index) nggak error
+        Route::get('/arsip-absen', [AbsensiController::class, 'index'])->name('guru.absensi.index');
+
+        // CRUD Materi
+        Route::prefix('materi-manage')->name('guru.materi.')->group(function () {
             Route::get('/{id}/edit', [MateriController::class, 'edit'])->name('edit'); 
             Route::put('/{id}', [MateriController::class, 'update'])->name('update'); 
             Route::delete('/{id}', [MateriController::class, 'destroy'])->name('destroy'); 
         });
 
-        // --- RIWAYAT ABSENSI ---
-        Route::get('/absensi/riwayat', [AbsensiController::class, 'index'])->name('guru.absensi.index');
-        
-        // Logout
         Route::post('/logout', [GuruAuthController::class, 'logout'])->name('guru.logout');
     });
 });

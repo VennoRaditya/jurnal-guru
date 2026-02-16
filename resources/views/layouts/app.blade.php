@@ -35,16 +35,17 @@
                 Dashboard
             </a>
             
-            <a href="{{ route('guru.absensi.index') }}" 
-               class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/absensi*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                Presensi Siswa
-            </a>
-            
-            <a href="{{ route('guru.materi.index') }}" 
-               class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/materi*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                Materi Ajar
-            </a>
+            {{-- Ubah bagian ini --}}
+<a href="{{ route('guru.presensi.select') }}" 
+   class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/presensi*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+    Presensi Siswa
+</a>
 
+{{-- Bagian Materi Ajar tetap ke riwayat --}}
+<a href="{{ route('guru.materi.index') }}" 
+   class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/materi*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+    Materi Ajar
+</a>
             {{-- MENU BARU: DAFTAR MURID --}}
             <a href="{{ route('guru.siswa.index') }}" 
                class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/siswa*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
