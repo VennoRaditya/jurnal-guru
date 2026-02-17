@@ -1,103 +1,67 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', 'Panel Admin Guru')
-
-@section('header_title', 'Panel Admin Guru')
+@section('title', 'Kelola Guru')
+@section('header_title', 'Data Tenaga Pengajar')
+@section('header_subtitle', 'Manajemen akun dan data mata pelajaran guru.')
 
 @section('content')
-<div class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-    <div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-blue-700 mb-1">Manajemen Guru</h1>
-        <p class="text-slate-500 text-sm">Kelola data guru, edit, tambah, dan hapus dengan mudah.</p>
-    </div>
-    <button onclick="document.getElementById('modal-tambah').classList.remove('hidden')" class="bg-gradient-r from-blue-600 to-blue-400 text-white px-6 py-2 rounded-lg font-bold shadow hover:from-blue-700 hover:to-blue-500 transition">Tambah Guru</button>
-</div>
-
-<div class="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto">
-    <table class="min-w-full divide-y divide-slate-200 text-sm">
-        <thead class="bg-blue-50">
-            <tr>
-                <th class="px-4 py-3 text-left font-bold text-blue-700 uppercase">Nama</th>
-                <th class="px-4 py-3 text-left font-bold text-blue-700 uppercase">NIP</th>
-                <th class="px-4 py-3 text-left font-bold text-blue-700 uppercase">Email</th>
-                <th class="px-4 py-3 text-left font-bold text-blue-700 uppercase">Mata Pelajaran</th>
-                <th class="px-4 py-3 text-left font-bold text-blue-700 uppercase">Aksi</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-            <tr class="bg-yellow-50 font-bold">
-                <td class="px-4 py-3">Admin 1</td>
-                <td class="px-4 py-3">-</td>
-                <td class="px-4 py-3">admin1gmail.com</td>
-                <td class="px-4 py-3">-</td>
-                <td class="px-4 py-3 text-slate-500">Password: admin 1</td>
-            </tr>
-            @forelse($gurus as $guru)
-            <tr class="hover:bg-blue-50/30 transition">
-                <td class="px-4 py-3 font-semibold">{{ $guru->nama }}</td>
-                <td class="px-4 py-3">{{ $guru->nip }}</td>
-                <td class="px-4 py-3">{{ $guru->email }}</td>
-                <td class="px-4 py-3">{{ $guru->mata_pelajaran }}</td>
-                <td class="px-4 py-3 flex gap-2">
-                    <button onclick="editGuru(@json($guru))" class="bg-yellow-400 text-white px-3 py-1 rounded shadow hover:bg-yellow-500">Edit</button>
-                    <form action="{{ route('guru.destroy', $guru->id) }}" method="POST" onsubmit="return confirm('Yakin hapus guru ini?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="bg-rose-600 text-white px-3 py-1 rounded shadow hover:bg-rose-700">Hapus</button>
-                    </form>
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="5" class="text-center text-slate-400 py-8">Belum ada data guru.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-
-<!-- Modal Tambah Guru -->
-<div id="modal-tambah" class="fixed inset-0 bg-black/40 items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl p-8 w-full max-w-md relative shadow-xl">
-        <button onclick="document.getElementById('modal-tambah').classList.add('hidden')" class="absolute top-2 right-2 text-slate-400 hover:text-slate-700 text-2xl">&times;</button>
-        <h2 class="text-xl font-bold mb-4 text-blue-700">Tambah Guru</h2>
-        <form action="{{ route('guru.store') }}" method="POST" class="space-y-4">
+<div class="space-y-8">
+    {{-- Form Tambah Guru --}}
+    <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8">
+        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Registrasi Guru Baru</h3>
+        <form action="{{ route('admin.guru.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             @csrf
-            <input type="text" name="nama" placeholder="Nama" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" required>
-            <input type="text" name="nip" placeholder="NIP" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" required>
-            <input type="email" name="email" placeholder="Email" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" required>
-            <input type="text" name="mata_pelajaran" placeholder="Mata Pelajaran" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" required>
-            <input type="password" name="password" placeholder="Password" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" required>
-            <button type="submit" class="w-full bg-gradient-r from-blue-600 to-blue-400 text-white px-4 py-2 rounded-lg font-bold hover:from-blue-700 hover:to-blue-500 transition">Simpan</button>
+            <input type="text" name="nip" placeholder="NIP" required class="bg-slate-50 border-none rounded-2xl px-6 py-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <input type="text" name="nama" placeholder="Nama Lengkap" required class="bg-slate-50 border-none rounded-2xl px-6 py-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <input type="text" name="mapel" placeholder="Mata Pelajaran" required class="bg-slate-50 border-none rounded-2xl px-6 py-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <button type="submit" class="bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
+                Simpan Guru
+            </button>
         </form>
     </div>
-</div>
 
-<!-- Modal Edit Guru (akan diisi via JS) -->
-<div id="modal-edit" class="fixed inset-0 bg-black/40 items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl p-8 w-full max-w-md relative shadow-xl">
-        <button onclick="document.getElementById('modal-edit').classList.add('hidden')" class="absolute top-2 right-2 text-slate-400 hover:text-slate-700 text-2xl">&times;</button>
-        <h2 class="text-xl font-bold mb-4 text-blue-700">Edit Guru</h2>
-        <form id="form-edit-guru" method="POST" class="space-y-4">
-            @csrf
-            @method('PUT')
-            <input type="text" name="nama" id="edit-nama" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" required>
-            <input type="text" name="nip" id="edit-nip" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" required>
-            <input type="email" name="email" id="edit-email" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" required>
-            <input type="text" name="mata_pelajaran" id="edit-mata_pelajaran" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" required>
-            <input type="password" name="password" id="edit-password" class="w-full border border-slate-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-200" placeholder="Kosongkan jika tidak ganti">
-            <button type="submit" class="w-full bg-gradient-r from-blue-600 to-blue-400 text-white px-4 py-2 rounded-lg font-bold hover:from-blue-700 hover:to-blue-500 transition">Update</button>
-        </form>
+    {{-- Tabel List Guru --}}
+    <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th class="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">NIP</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Lengkap</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Mata Pelajaran</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    @forelse($gurus as $g)
+                    <tr class="hover:bg-slate-50/30 transition-colors">
+                        <td class="px-10 py-5 text-xs font-bold text-slate-500 tracking-wider">{{ $g->nip }}</td>
+                        <td class="px-6 py-5 text-sm font-bold text-slate-800">{{ $g->nama }}</td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest">{{ $g->mapel }}</span>
+                        </td>
+                        <td class="px-6 py-5 text-right">
+                            <form action="{{ route('admin.guru.destroy', $g->id) }}" method="POST" onsubmit="return confirm('Hapus data guru ini?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-rose-400 hover:text-rose-600 transition-all hover:scale-110">
+                                    <svg class="w-5 h-5 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="px-10 py-20 text-center text-slate-400 italic text-xs">Belum ada data tenaga pengajar.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="p-8 border-t border-slate-50 bg-slate-50/30">
+            {{ $gurus->links() }}
+        </div>
     </div>
 </div>
-
-<script>
-function editGuru(guru) {
-    document.getElementById('modal-edit').classList.remove('hidden');
-    document.getElementById('edit-nama').value = guru.nama;
-    document.getElementById('edit-nip').value = guru.nip;
-    document.getElementById('edit-email').value = guru.email;
-    document.getElementById('edit-mata_pelajaran').value = guru.mata_pelajaran;
-    document.getElementById('edit-password').value = '';
-    document.getElementById('form-edit-guru').action = '/guru/' + guru.id;
-}
-</script>
 @endsection

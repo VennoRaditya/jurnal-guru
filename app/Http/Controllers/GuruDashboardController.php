@@ -3,35 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Siswa;
-use App\Models\Materi; // Pastikan model Materi sudah ada
+use App\Models\Materi; // Asumsi nama model jurnal/materi Anda
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class GuruDashboardController extends Controller 
+class GuruDashboardController extends Controller
 {
-    public function index() 
+    public function index()
     {
-        // 1. Mengambil total siswa (bisa difilter berdasarkan kelas guru jika ada relasinya)
-        $totalSiswa = Siswa::count();
+        $guru_id = Auth::guard('guru')->user()->id;
 
-        // 2. Mengambil total materi yang sudah diinput oleh guru yang sedang login
-        // Diasumsikan tabel materi memiliki kolom 'guru_id'
-        $totalMateri = Materi::where('guru_id', Auth::guard('guru')->id())->count();
-
-        // 3. Dummy data untuk presensi (nanti bisa dihubungkan ke model Absensi)
-        $rataPresensi = '95%'; 
-
-        // 4. Mengambil materi terbaru untuk riwayat di dashboard
-        $materiTerbaru = Materi::where('guru_id', Auth::guard('guru')->id())
+        // Ambil data asli dari database
+        $total_siswa = Siswa::count();
+        $total_materi = Materi::where('guru_id', $guru_id)->count();
+        
+        // Ambil 3 jurnal terakhir milik guru ini
+        $recent_materi = Materi::where('guru_id', $guru_id)
                                 ->latest()
-                                ->take(1)
+                                ->take(3)
                                 ->get();
 
         return view('guru.dashboard', compact(
-            'totalSiswa', 
-            'totalMateri', 
-            'rataPresensi', 
-            'materiTerbaru'
+            'total_siswa', 
+            'total_materi', 
+            'recent_materi'
         ));
     }
-}
+}   

@@ -6,10 +6,12 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run(): void
+        public function run(): void
     {
         $this->call([
-            UserGuruSeeder::class, // Tambahkan ini agar perintah db:seed jalan
+            AdminSeeder::class,
+            GuruSeeder::class,
+            // SiswaSeeder::class, // Jika ada
         ]);
     }
 }

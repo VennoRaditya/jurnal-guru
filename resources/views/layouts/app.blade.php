@@ -35,21 +35,14 @@
                 Dashboard
             </a>
             
-            {{-- Ubah bagian ini --}}
-<a href="{{ route('guru.presensi.select') }}" 
-   class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/presensi*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-    Presensi Siswa
-</a>
+            <a href="{{ route('guru.presensi.select') }}" 
+               class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/presensi*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                Presensi Siswa
+            </a>
 
-{{-- Bagian Materi Ajar tetap ke riwayat --}}
-<a href="{{ route('guru.materi.index') }}" 
-   class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/materi*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-    Materi Ajar
-</a>
-            {{-- MENU BARU: DAFTAR MURID --}}
-            <a href="{{ route('guru.siswa.index') }}" 
-               class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/siswa*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                Daftar Murid
+            <a href="{{ route('guru.materi.index') }}" 
+               class="flex items-center px-4 py-3 rounded-xl text-sm transition-all duration-200 {{ request()->is('guru/materi*') ? 'nav-active shadow-sm shadow-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                Materi Ajar
             </a>
         </nav>
 
@@ -76,7 +69,7 @@
             <div class="flex items-center space-x-6">
                 <div class="text-right hidden sm:block">
                     <p class="text-xs font-bold text-slate-900 leading-none">{{ Auth::guard('guru')->user()->nip }}</p>
-                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mt-1">{{ Auth::guard('guru')->user()->mata_pelajaran }}</p>
+                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mt-1">{{ Auth::guard('guru')->user()->mapel }}</p>
                 </div>
                 <div class="h-10 w-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center font-bold text-blue-600 text-sm shadow-sm uppercase">
                     {{ substr(Auth::guard('guru')->user()->nama, 0, 1) }}

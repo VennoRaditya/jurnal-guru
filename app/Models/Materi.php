@@ -9,22 +9,41 @@ class Materi extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['guru_id', 'judul_materi', 'pembahasan', 'mata_pelajaran', 'kelas', 'tanggal'];
+    // Pastikan kolom ini sama persis dengan migration database kamu
+    protected $fillable = [
+        'guru_id', 
+        'judul_materi', 
+        'pembahasan', 
+        'mata_pelajaran', 
+        'kelas', 
+        'tanggal'
+    ];
 
-    // Relasi ke banyak Absensi (Satu materi punya banyak data absen siswa)
+    /**
+     * Relasi ke Absensi
+     * Gunakan SATU nama saja agar tidak bingung. 
+     * Jika tabelnya 'absensis', gunakan nama ini.
+     */
     public function absensis()
     {
-        return $this->hasMany(Absensi::class);
+        // Pastikan foreign key di tabel absensis adalah 'materi_id'
+        return $this->hasMany(Absensi::class, 'materi_id');
     }
 
-    // Relasi ke Guru
+    /**
+     * Alias untuk presensi (opsional)
+     * Jika di view kamu memanggil $materi->presensis, maka gunakan ini.
+     */
+    public function presensis()
+    {
+        return $this->hasMany(Absensi::class, 'materi_id');
+    }
+
+    /**
+     * Relasi ke Guru
+     */
     public function guru()
     {
-        return $this->belongsTo(Guru::class);
+        return $this->belongsTo(Guru::class, 'guru_id');
     }
-
-    public function presensis()
-{
-    return $this->hasMany(Presensi::class, 'materi_id');
-}
 }

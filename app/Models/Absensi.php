@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Absensi extends Model
 {
     use HasFactory;
 
-    // Menentukan nama tabel secara eksplisit (opsional tapi disarankan)
     protected $table = 'absensis';
 
     protected $fillable = [
@@ -19,17 +19,24 @@ class Absensi extends Model
         'tanggal'
     ];
 
-    /**
-     * Casting variabel tanggal menjadi objek Carbon otomatis.
-     * Ini memudahkan Anda melakukan format tanggal di Blade tanpa parse manual.
-     */
     protected $casts = [
         'tanggal' => 'date',
     ];
 
     /**
-     * Relasi ke Materi (Arsip Jurnal)
-     * withDefault() mencegah error "Attempt to read property on null" jika materi terhapus.
+     * Mutator & Accessor (Terbaru di Laravel)
+     * Memastikan status yang masuk ke DB selalu rapi (contoh: 'hadir' jadi 'Hadir')
+     * Ini kunci agar hitungan statistik di riwayat tidak error.
+     */
+    protected function status(): Attribute
+    {
+        return Attribute::make(
+            set: fn (string $value) => ucfirst(strtolower($value)),
+        );
+    }
+
+    /**
+     * Relasi ke Materi
      */
     public function materi()
     {
@@ -50,11 +57,10 @@ class Absensi extends Model
     }
 
     /**
-     * Scope untuk memudahkan filter berdasarkan status tertentu (Hadir, Sakit, dll)
-     * Contoh penggunaan: Absensi::status('hadir')->get();
+     * Scope Filter Status
      */
     public function scopeStatus($query, $status)
     {
-        return $query->where('status', $status);
+        return $query->where('status', ucfirst(strtolower($status)));
     }
 }
