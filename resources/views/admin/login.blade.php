@@ -27,7 +27,7 @@
 
     <div class="admin-card p-10 md:p-12 rounded-[3rem] w-full max-w-md relative overflow-hidden">
         {{-- Decorative Bar --}}
-        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600"></div>
+        <div class="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-blue-600 via-purple-600 to-indigo-600"></div>
 
         <div class="text-center mb-10">
             <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-900 rounded-3xl mb-6 shadow-xl">

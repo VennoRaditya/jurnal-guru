@@ -8,7 +8,7 @@
 <div class="space-y-8">
     {{-- Alert Success --}}
     @if(session('success'))
-        <div class="bg-emerald-50 border border-emerald-100 text-emerald-600 px-6 py-4 rounded-[2rem] text-sm font-bold flex items-center shadow-sm">
+        <div class="bg-emerald-50 border border-emerald-100 text-emerald-600 px-6 py-4 rounded-4x1 text-sm font-bold flex items-center shadow-sm">
             <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
             {{ session('success') }}
         </div>
@@ -93,7 +93,7 @@
                     <tr>
                         <td colspan="4" class="px-10 py-24 text-center">
                             <div class="flex flex-col items-center">
-                                <div class="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-4 border border-dashed border-slate-200">
+                                <div class="w-20 h-20 bg-slate-50 rounded-4x1 flex items-center justify-center mb-4 border border-dashed border-slate-200">
                                     <svg class="w-10 h-10 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.246.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                                 </div>
                                 <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest">Arsip Masih Kosong</h4>
