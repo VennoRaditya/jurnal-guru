@@ -8,12 +8,15 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@sekolah.sch.id',
-            'password' => Hash::make('admin123'),
-        ]);
+        // Menggunakan updateOrCreate agar tidak error jika data sudah ada
+        User::updateOrCreate(
+            ['email' => 'admin@sekolah.sch.id'], // Kolom unik sebagai kunci pencarian
+            [
+                'name' => 'Administrator',
+                'password' => Hash::make('admin123'),
+            ]
+        );
     }
 }
