@@ -5,21 +5,20 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Hash;
 
 class Guru extends Authenticatable 
 {
     use HasFactory, Notifiable;
 
-    // Pastikan nama tabel sesuai dengan migration kamu
     protected $table = 'gurus'; 
 
     protected $fillable = [
+        'nip',
+        'username', // Penting agar tidak kena error Integrity Constraint lagi
         'nama', 
-        'nip', 
         'email', 
         'password', 
-        'mata_pelajaran'
+        'mapel' // Diseragamkan dengan Controller dan Migration
     ];
 
     protected $hidden = [

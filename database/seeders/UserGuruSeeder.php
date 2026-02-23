@@ -3,20 +3,31 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Guru;
 use Illuminate\Support\Facades\Hash;
 
 class UserGuruSeeder extends Seeder
 {
     public function run(): void
-{
-    \App\Models\Guru::create([
-        'nama' => 'Pak Andy',
-        'nip'  => '12345678',
-        'email' => 'admin@gmail.com',
-        'password' => bcrypt('password'), // Wajib di-bcrypt!
-        'mata_pelajaran' => 'IPAS',
-    ]);
-}
+    {
+        // Data Pak Andy
+        Guru::create([
+            'username' => 'guru123',
+            'nama'     => 'Pak Andy',
+            'email'    => 'pakandy@gmail.com',
+            'password' => Hash::make('password123'),
+            'nip'      => '123456789',
+            'mapel'    => 'Informatika',
+        ]);
+
+        // Data Bu Riri
+        Guru::create([
+            'username' => 'riri123',
+            'nama'     => 'Bu Riri',
+            'email'    => 'bu.riri@sekolah.sch.id',
+            'password' => Hash::make('password123'),
+            'nip'      => '122334455',
+            'mapel'    => 'Matematika',
+        ]);
+    }
 }
