@@ -3,56 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Guru | Jurnal Digital</title>
+    <title>Portal Guru | SMKN 43 Jakarta</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #f8fafc;
-            background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
-            background-size: 24px 24px;
+            background: #0f172a; /* Warna dasar gelap yang elegan */
+            position: relative;
+            overflow-x: hidden;
         }
+
+        /* Background Animasi Abstract */
+        .bg-blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            filter: blur(80px);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.15;
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            from { transform: translate(-10%, -10%); }
+            to { transform: translate(20%, 20%); }
+        }
+
         .login-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+        }
+
+        .logo-container {
+            background: white;
+            padding: 12px;
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fade-up {
+            animation: fadeUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-6">
 
-    <div class="login-card p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] w-full max-w-md fade-in">
-        
-        <div class="flex justify-center mb-8">
-            <div class="relative">
-                <div class="absolute inset-0 bg-blue-500 blur-2xl opacity-20 animate-pulse"></div>
-                <div class="relative bg-linear-to-tr from-blue-600 to-indigo-600 p-4 rounded-3x1 shadow-xl shadow-blue-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                </div>
-            </div>
-        </div>
+    <div class="bg-blob top-0 left-0"></div>
+    <div class="bg-blob bottom-0 right-0" style="animation-delay: -10s; background: #8b5cf6;"></div>
 
-        <div class="text-center mb-10">
-            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Portal Pengajar</h2>
-            <p class="text-slate-500 mt-2 font-medium text-sm px-4 leading-relaxed">Kelola jurnal mengajar dan absensi digital dalam satu pintu.</p>
+    <div class="login-card p-8 md:p-12 rounded-[3rem] w-full max-w-[440px] fade-up">
+        
+        <div class="flex flex-col items-center mb-10">
+            <div class="logo-container mb-6 group transition-transform duration-500 hover:scale-110">
+                <img src="{{ asset('images/logo_smkn_43.jpg') }}" 
+                     alt="Logo SMKN 43" 
+                     class="h-20 w-20 object-contain mix-blend-multiply">
+            </div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Portal Guru</h1>
+            <p class="text-slate-400 mt-2 text-sm font-medium text-center">
+                SMK Negeri 43 Jakarta <br>
+                <span class="text-blue-400">Digital Journal & Attendance</span>
+            </p>
         </div>
 
         @if(session('error'))
-            <div class="bg-rose-50 border border-rose-100 text-rose-600 p-4 mb-6 rounded-2xl flex items-center animate-shake">
+            <div class="bg-red-500/10 border border-red-500/20 text-red-400 p-4 mb-8 rounded-2xl flex items-center animate-bounce">
                 <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p class="text-xs font-bold uppercase tracking-wide">{{ session('error') }}</p>
+                <p class="text-xs font-bold uppercase tracking-wider">{{ session('error') }}</p>
             </div>
         @endif
 
@@ -60,22 +113,34 @@
             @csrf
 
             <div class="space-y-2">
-                <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Email Sekolah</label>
-                <input type="email" name="email" 
-                    class="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-slate-700 placeholder-slate-300" 
-                    placeholder="nama@sekolah.sch.id" required>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-2">Email Address</label>
+                <div class="relative">
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                        </svg>
+                    </span>
+                    <input type="email" name="email" required
+                        class="input-field w-full pl-14 pr-6 py-4 rounded-2xl outline-none text-sm font-semibold" 
+                        placeholder="guru@smkn43.sch.id">
+                </div>
             </div>
 
             <div class="space-y-2">
-                <div class="flex justify-between items-center ml-1">
-                    <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Kata Sandi</label>
-                    <a href="#" class="text-[10px] font-black text-blue-600 hover:text-indigo-600 transition uppercase tracking-widest">Lupa?</a>
+                <div class="flex justify-between items-center ml-2">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Secret Password</label>
+                    <a href="#" class="text-[10px] font-bold text-blue-400 hover:text-blue-300 transition uppercase tracking-widest">Forgot?</a>
                 </div>
                 <div class="relative group">
-                    <input type="password" id="password" name="password" 
-                        class="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-slate-700 placeholder-slate-300" 
-                        placeholder="••••••••" required>
-                    <button type="button" onclick="togglePassword()" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-blue-600 transition">
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </span>
+                    <input type="password" id="password" name="password" required
+                        class="input-field w-full pl-14 pr-14 py-4 rounded-2xl outline-none text-sm font-semibold" 
+                        placeholder="••••••••">
+                    <button type="button" onclick="togglePassword()" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition">
                         <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -84,37 +149,37 @@
                 </div>
             </div>
 
-            <div class="flex items-center ml-1">
-                <input type="checkbox" id="remember" name="remember" class="w-4 h-4 text-blue-600 border-slate-200 rounded-lg focus:ring-blue-500 focus:ring-offset-0 transition cursor-pointer">
-                <label for="remember" class="ml-3 text-xs text-slate-500 font-bold cursor-pointer">Tetap masuk di perangkat ini</label>
+            <div class="flex items-center ml-2">
+                <input type="checkbox" id="remember" name="remember" class="w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500/20">
+                <label for="remember" class="ml-3 text-xs text-slate-400 font-medium cursor-pointer">Remember this session</label>
             </div>
 
             <button type="submit" 
-                class="w-full bg-slate-900 hover:bg-blue-600 text-white font-bold py-5 rounded-2xl transition-all duration-300 shadow-xl shadow-slate-900/10 hover:shadow-blue-500/20 active:scale-[0.98] text-sm uppercase tracking-widest">
-                Masuk Ke Dashboard
+                class="btn-primary w-full text-white font-extrabold py-5 rounded-2xl text-sm uppercase tracking-[0.2em] mt-4">
+                Sign In Now
             </button>
         </form>
 
         <div class="relative my-10">
             <div class="absolute inset-0 flex items-center">
-                <span class="w-full border-t border-slate-100"></span>
+                <span class="w-full border-t border-slate-800"></span>
             </div>
-            <div class="relative flex justify-center text-[10px] uppercase font-black tracking-[0.3em]">
-                <span class="bg-white px-6 text-slate-300">Akses Lain</span>
+            <div class="relative flex justify-center text-[10px] uppercase font-bold tracking-[0.4em]">
+                <span class="bg-[#1a2133] px-4 text-slate-600 rounded-full">Other Access</span>
             </div>
         </div>
 
         <a href="{{ route('admin.login') }}" 
-            class="group flex items-center justify-center w-full bg-white border border-slate-100 hover:border-blue-500/30 text-slate-600 font-bold py-4 rounded-2xl transition-all duration-300 active:scale-[0.98] text-[11px] uppercase tracking-widest shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-3 text-slate-400 group-hover:text-blue-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            class="flex items-center justify-center w-full border border-slate-800 hover:border-slate-600 text-slate-400 hover:text-white font-bold py-4 rounded-2xl transition-all duration-300 text-[11px] uppercase tracking-widest gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Mode Administrator
+            Administrator Only
         </a>
 
         <div class="mt-10 text-center">
-            <p class="text-slate-300 text-[9px] font-black uppercase tracking-[0.2em]">
-                &copy; 2026 IT Management System
+            <p class="text-slate-600 text-[9px] font-bold uppercase tracking-[0.3em]">
+                &copy; 2026 IT Dev SMKN 43 Jakarta
             </p>
         </div>
     </div>
@@ -133,6 +198,5 @@
             }
         }
     </script>
-
 </body>
 </html>

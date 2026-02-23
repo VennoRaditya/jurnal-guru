@@ -1,138 +1,154 @@
 @extends('layouts.app')
 
 @section('title', 'Input Presensi & Jurnal')
-@section('header_title', 'Presensi Kelas ' . $kelas_nama)
+@section('header_title', 'Kelas ' . $kelas_nama)
+@section('header_subtitle', 'Silahkan lengkapi laporan pembelajaran dan absensi hari ini.')
 
 @section('content')
-<div class="max-w-5xl mx-auto">
-    {{-- ALERT: Pesan Error Validasi --}}
-    @if($errors->any())
-        <div class="mb-6 bg-rose-50 border border-rose-100 text-rose-600 px-6 py-4 rounded-3xl text-sm font-bold shadow-sm">
-            <div class="flex items-center mb-2">
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-                <span>Periksa kembali inputan Anda:</span>
-            </div>
-            <ul class="list-disc list-inside ml-7 opacity-80">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    {{-- ALERT: Pesan Gagal Simpan dari Controller --}}
-    @if(session('error'))
-        <div class="mb-6 bg-amber-50 border border-amber-200 text-amber-700 px-6 py-4 rounded-3xl text-sm font-bold shadow-sm flex items-center">
-            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            {{ session('error') }}
-        </div>
-    @endif
-
-    <form action="{{ route('guru.presensi.storeJurnal') }}" method="POST">
-        @csrf
-        {{-- Hidden fields --}}
-        <input type="hidden" name="kelas" value="{{ $kelas_nama }}">
-
-        <div class="space-y-8">
-            {{-- BAGIAN 1: INPUT JURNAL MATERI --}}
-            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 md:p-10 transition-all hover:shadow-md">
-                <div class="flex items-center space-x-4 mb-8">
-                    <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+<div class="max-w-5xl mx-auto pb-20">
+    {{-- ALERT: Pesan Error --}}
+    @if($errors->any() || session('error'))
+        <div class="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div class="bg-rose-50 border border-rose-100 rounded-4x1 p-6 shadow-sm">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-rose-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Jurnal Pembelajaran</h3>
-                        <p class="text-xs text-slate-400 font-medium">Informasikan materi yang Anda ajarkan hari ini.</p>
+                        <h4 class="text-sm font-black text-rose-700 uppercase tracking-widest mb-1">Terjadi Kesalahan</h4>
+                        @if(session('error'))
+                            <p class="text-xs text-rose-600/80 font-bold tracking-tight">{{ session('error') }}</p>
+                        @else
+                            <ul class="text-[11px] text-rose-600/80 font-bold list-disc list-inside">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <form action="{{ route('guru.presensi.storeJurnal') }}" method="POST" class="space-y-10">
+        @csrf
+        <input type="hidden" name="kelas" value="{{ $kelas_nama }}">
+
+        {{-- BAGIAN 1: JURNAL MATERI (Glassmorphism Look) --}}
+        <div class="bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-8 md:p-12 relative overflow-hidden group">
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center gap-5 mb-10">
+                    <div class="w-14 h-14 bg-blue-600 rounded-3x1 flex items-center justify-center text-white shadow-2xl shadow-blue-200 transition-transform group-hover:rotate-6">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Jurnal Pembelajaran</h3>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">Report Academic Activity</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Mata Pelajaran</label>
-                        <input type="text" name="mata_pelajaran" required value="{{ old('mata_pelajaran') }}" placeholder="Contoh: Pemrograman Web"
-                            class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-300">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Mata Pelajaran</label>
+                        <input type="text" name="mata_pelajaran" required value="{{ old('mata_pelajaran', Auth::guard('guru')->user()->mapel) }}" 
+                            class="w-full bg-slate-50/50 border-2 border-transparent rounded-3x1 px-7 py-5 text-sm font-black text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
                     </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Judul Materi</label>
-                        <input type="text" name="judul_materi" required value="{{ old('judul_materi') }}" placeholder="Contoh: Struktur Data Stack & Queue"
-                            class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-300">
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Judul Materi</label>
+                        <input type="text" name="judul_materi" required value="{{ old('judul_materi') }}" placeholder="E.g: Laravel Controller & Routing"
+                            class="w-full bg-slate-50/50 border-2 border-transparent rounded-3x1 px-7 py-5 text-sm font-black text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+                    </div>
+
+                    <div class="md:col-span-2 space-y-3">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Ringkasan Pembahasan</label>
+                        <textarea name="pembahasan" required rows="4" placeholder="Apa saja yang dipelajari hari ini?"
+                            class="w-full bg-slate-50/50 border-2 border-transparent rounded-4x1 px-7 py-5 text-sm font-bold text-slate-600 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none min-h-[150px]">{{ old('pembahasan') }}</textarea>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Pembahasan / Ringkasan</label>
-                    <textarea name="pembahasan" required rows="4" placeholder="Jelaskan poin-poin penting yang dibahas..."
-                        class="w-full bg-slate-50 border-none rounded-3xl px-6 py-4 text-sm font-medium text-slate-600 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-300">{{ old('pembahasan') }}</textarea>
+        {{-- BAGIAN 2: PRESENSI SISWA (Professional Table) --}}
+        <div class="bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden transition-all">
+            <div class="p-8 md:p-12 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div class="flex items-center gap-5">
+                    <div class="w-14 h-14 bg-emerald-500 rounded-3x1 flex items-center justify-center text-white shadow-2xl shadow-emerald-200">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Presensi Siswa</h3>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">Total Registered: {{ count($siswas) }} Students</p>
+                    </div>
+                </div>
+                
+                {{-- Quick Info Mobile --}}
+                <div class="bg-slate-50 px-6 py-3 rounded-2xl md:hidden">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Scroll horizontal untuk status</p>
                 </div>
             </div>
 
-            {{-- BAGIAN 2: DAFTAR ABSENSI SISWA --}}
-            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-md">
-                <div class="p-8 md:p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex items-center space-x-4">
-                        <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Presensi Siswa</h3>
-                            <p class="text-xs text-slate-400 font-medium italic">Status default "Hadir". Ubah jika berhalangan.</p>
-                        </div>
-                    </div>
-                    <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-4 py-2 rounded-full uppercase tracking-widest">
-                        Total: {{ count($siswas) }} Siswa
-                    </span>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50/50">
-                                <th class="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Siswa</th>
-                                <th class="px-6 py-6 text-[10px] font-black text-center text-slate-400 uppercase tracking-[0.2em]">Kehadiran</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-50">
-                            @foreach($siswas as $siswa)
-                            <tr class="hover:bg-slate-50/30 transition-colors">
-                                <td class="px-10 py-6">
-                                    <p class="text-sm font-bold text-slate-700">{{ $siswa->nama }}</p>
-                                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">NIS: {{ $siswa->nis }}</p>
-                                </td>
-                                <td class="px-6 py-6">
-                                    <div class="flex items-center justify-center space-x-3 md:space-x-6">
-                                        @foreach(['hadir', 'sakit', 'izin', 'alfa'] as $status)
-                                        <label class="group flex flex-col items-center cursor-pointer">
-                                            <input type="radio" name="absen[{{ $siswa->id }}]" value="{{ $status }}" 
-                                                {{ $status == 'hadir' ? 'checked' : '' }} class="hidden peer">
-                                            
-                                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center border-2 border-transparent transition-all mb-1
-                                                {{ $status == 'hadir' ? 'bg-emerald-50 text-emerald-400 peer-checked:bg-emerald-500 peer-checked:text-white shadow-emerald-100' : '' }}
-                                                {{ $status == 'sakit' ? 'bg-amber-50 text-amber-400 peer-checked:bg-amber-500 peer-checked:text-white shadow-amber-100' : '' }}
-                                                {{ $status == 'izin' ? 'bg-blue-50 text-blue-400 peer-checked:bg-blue-600 peer-checked:text-white shadow-blue-100' : '' }}
-                                                {{ $status == 'alfa' ? 'bg-rose-50 text-rose-400 peer-checked:bg-rose-500 peer-checked:text-white shadow-rose-100' : '' }}
-                                                peer-checked:shadow-lg peer-checked:scale-110
-                                            ">
-                                                <span class="text-[10px] font-black uppercase">{{ substr($status, 0, 1) }}</span>
-                                            </div>
-                                            <span class="text-[8px] font-black uppercase text-slate-300 group-hover:text-slate-500 transition-colors">{{ $status }}</span>
-                                        </label>
-                                        @endforeach
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-slate-50/50">
+                            <th class="pl-12 pr-6 py-7 text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Informasi Siswa</th>
+                            <th class="px-6 py-7 text-[10px] font-black text-center text-slate-400 uppercase tracking-[0.25em]">Opsi Kehadiran</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        @foreach($siswas as $siswa)
+                        <tr class="hover:bg-blue-50/30 transition-all group">
+                            <td class="pl-12 pr-6 py-7">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                        {{ substr($siswa->nama, 0, 1) }}
                                     </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-700 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{{ $siswa->nama }}</p>
+                                        <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-0.5">NIS: {{ $siswa->nis }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-7">
+                                <div class="flex items-center justify-center space-x-2 md:space-x-4">
+                                    @foreach(['hadir' => 'bg-emerald-500', 'sakit' => 'bg-amber-500', 'izin' => 'bg-blue-500', 'alfa' => 'bg-rose-500'] as $status => $color)
+                                    <label class="relative flex flex-col items-center cursor-pointer group/item">
+                                        <input type="radio" name="absen[{{ $siswa->id }}]" value="{{ $status }}" 
+                                            {{ $status == 'hadir' ? 'checked' : '' }} class="hidden peer">
+                                        
+                                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center border-2 border-slate-100 text-slate-300 transition-all duration-300 peer-checked:border-transparent peer-checked:{{ $color }} peer-checked:text-white peer-checked:shadow-lg peer-checked:scale-110">
+                                            <span class="text-[10px] font-black uppercase">{{ substr($status, 0, 1) }}</span>
+                                        </div>
+                                        <span class="text-[7px] font-black uppercase text-slate-300 mt-2 tracking-widest opacity-0 group-hover/item:opacity-100 peer-checked:opacity-100 peer-checked:text-slate-500 transition-all">{{ $status }}</span>
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
-                <div class="p-10 bg-slate-50/50 flex flex-col md:flex-row items-center justify-end gap-4 border-t border-slate-50">
-                    <button type="submit" class="w-full md:w-auto bg-slate-900 text-white px-12 py-4 rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-blue-600 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-slate-200">
-                        Simpan Jurnal & Presensi
-                    </button>
-                </div>
+            <div class="p-8 md:p-12 bg-slate-50/50 flex justify-end border-t border-slate-50">
+                <button type="submit" class="group relative w-full md:w-auto overflow-hidden bg-slate-900 text-white px-14 py-5 rounded-3x1 text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-blue-600 hover:shadow-2xl hover:shadow-blue-500/30 active:scale-95">
+                    <span class="relative z-10">Finalize & Save Report</span>
+                    <div class="absolute inset-0 bg-linear-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </button>
             </div>
         </div>
     </form>
 </div>
+
+<style>
+    /* Smooth transition for radio buttons */
+    .peer-checked\:bg-emerald-500:checked ~ div { background-color: #10b981; }
+    .peer-checked\:bg-amber-500:checked ~ div { background-color: #f59e0b; }
+    .peer-checked\:bg-blue-500:checked ~ div { background-color: #3b82f6; }
+    .peer-checked\:bg-rose-500:checked ~ div { background-color: #f43f5e; }
+</style>
 @endsection
