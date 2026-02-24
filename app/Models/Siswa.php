@@ -12,15 +12,24 @@ class Siswa extends Model
     protected $fillable = [
         'nis',
         'nama',
-        'kelas_id', // Menggunakan ID untuk relasi ke tabel kelas
-        'jk',       // Gender (L/P)
+        'jk',
+        'kelas_id', // Ini yang paling penting untuk relasi
     ];
 
     /**
-     * Relasi Balik: Siswa dimiliki oleh satu Kelas
+     * Relasi ke model Kelas
+     * Pastikan di tabel 'siswas' ada kolom 'kelas_id'
      */
     public function kelas()
     {
         return $this->belongsTo(Kelas::class, 'kelas_id');
+    }
+
+    /**
+     * Optional: Accessor agar nama selalu rapi (Caps Lock)
+     */
+    public function setNamaAttribute($value)
+    {
+        $this->attributes['nama'] = strtoupper($value);
     }
 }

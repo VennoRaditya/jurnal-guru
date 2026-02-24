@@ -9,7 +9,7 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KelasController;
 
-// --- REDIRECT UTAMA & ALIAS ---
+// --- REDIRECT UTAMA ---
 Route::get('/', function () {
     if (auth()->guard('guru')->check()) {
         return redirect()->route('guru.dashboard');
@@ -20,8 +20,6 @@ Route::get('/', function () {
     return redirect()->route('guru.login'); 
 });
 
-// Route Alias untuk mencegah error "Route [login] not defined"
-// Ini akan otomatis melempar ke login guru jika sistem mencari route 'login'
 Route::get('/login', function() {
     return redirect()->route('guru.login');
 })->name('login');
@@ -30,7 +28,6 @@ Route::get('/login', function() {
 //                PANEL ADMIN
 // ==========================================
 Route::prefix('admin')->group(function () {
-    
     Route::middleware('guest')->group(function () {
         Route::get('/login', [AdminController::class, 'loginPage'])->name('admin.login');
         Route::post('/login', [AdminController::class, 'loginSubmit'])->name('admin.login.submit');
@@ -39,22 +36,24 @@ Route::prefix('admin')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
-        // GURU MANAGEMENT
+        // GURU MANAGE
         Route::prefix('guru-manage')->name('admin.guru.')->group(function () {
             Route::get('/', [GuruAuthController::class, 'index'])->name('index');
             Route::post('/store', [GuruAuthController::class, 'store'])->name('store');
             Route::delete('/{id}', [GuruAuthController::class, 'destroy'])->name('destroy');
         });
 
-        // KELAS MANAGEMENT
+        // KELAS MANAGE
         Route::prefix('kelas-manage')->name('admin.kelas.')->group(function () {
             Route::get('/', [KelasController::class, 'index'])->name('index');
             Route::post('/store', [KelasController::class, 'store'])->name('store');
-            Route::get('/{id}/siswa', [KelasController::class, 'getSiswa'])->name('siswa');
-            Route::delete('/{kelas}', [KelasController::class, 'destroy'])->name('destroy');
+            Route::delete('/{id}', [KelasController::class, 'destroy'])->name('destroy'); // Parameter konsisten pakai {id}
+            
+            // Route untuk Fetch data siswa (Alpine.js)
+            Route::get('/{id}/siswa', [SiswaController::class, 'getSiswaByKelas'])->name('getSiswa');
         });
 
-        // SISWA MANAGEMENT
+        // SISWA MANAGE
         Route::prefix('siswa-manage')->name('admin.siswa.')->group(function () {
             Route::get('/', [SiswaController::class, 'index'])->name('index');
             Route::get('/template/download', [SiswaController::class, 'downloadTemplate'])->name('template');
@@ -71,7 +70,6 @@ Route::prefix('admin')->group(function () {
 //                PANEL GURU
 // ==========================================
 Route::prefix('guru')->group(function () {
-    
     Route::middleware('guest:guru')->group(function () {
         Route::get('/login', [GuruAuthController::class, 'loginForm'])->name('guru.login');
         Route::post('/login', [GuruAuthController::class, 'login'])->name('guru.login.submit');
