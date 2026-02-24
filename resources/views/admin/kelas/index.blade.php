@@ -86,7 +86,7 @@
     </div>
 
     {{-- MODAL TAMBAH KELAS BARU --}}
-    <div x-show="openModalKelas" class="fixed inset-0 z-[120] overflow-y-auto" x-cloak>
+    <div x-show="openModalKelas" class="fixed inset-0 z-120 overflow-y-auto" x-cloak>
         <div class="flex items-center justify-center min-h-screen p-6">
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="openModalKelas = false"></div>
             <div class="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl relative z-10 overflow-hidden"
@@ -101,7 +101,7 @@
                         </div>
                         <div class="flex gap-3">
                             <button type="button" @click="openModalKelas = false" class="flex-1 py-4 text-[10px] font-black uppercase text-slate-400">Batal</button>
-                            <button type="submit" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/20">Simpan Kelas</button>
+                            <button type="submit" class="flex-2 bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/20">Simpan Kelas</button>
                         </div>
                     </form>
                 </div>
@@ -110,7 +110,7 @@
     </div>
 
     {{-- MODAL TAMBAH SISWA --}}
-    <div x-show="openModalSiswa" class="fixed inset-0 z-[120] overflow-y-auto" x-cloak>
+    <div x-show="openModalSiswa" class="fixed inset-0 z-120 overflow-y-auto" x-cloak>
         <div class="flex items-center justify-center min-h-screen p-6">
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="openModalSiswa = false; fileName = ''"></div>
             <div class="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl relative z-10 overflow-hidden"

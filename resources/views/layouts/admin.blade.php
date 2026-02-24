@@ -100,7 +100,7 @@
             <div class="p-6">
                 <div class="bg-slate-800/40 border border-slate-700/50 rounded-[2.5rem] p-6 text-center">
                     <div class="flex flex-col items-center mb-5">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-black text-sm shadow-lg mb-3 border border-white/10 text-white">
+                        <div class="w-12 h-12 rounded-2xl bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-black text-sm shadow-lg mb-3 border border-white/10 text-white">
                             {{ substr(auth()->user()->name, 0, 1) }}
                         </div>
                         <div class="overflow-hidden w-full">
