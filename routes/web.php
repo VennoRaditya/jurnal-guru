@@ -9,7 +9,7 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KelasController;
 
-// --- REDIRECT UTAMA ---
+// --- REDIRECT UTAMA & ALIAS ---
 Route::get('/', function () {
     if (auth()->guard('guru')->check()) {
         return redirect()->route('guru.dashboard');
@@ -17,9 +17,14 @@ Route::get('/', function () {
     if (auth()->guard('web')->check()) {
         return redirect()->route('admin.dashboard');
     }
-    // Arahkan ke login guru sebagai default landing page
     return redirect()->route('guru.login'); 
 });
+
+// Route Alias untuk mencegah error "Route [login] not defined"
+// Ini akan otomatis melempar ke login guru jika sistem mencari route 'login'
+Route::get('/login', function() {
+    return redirect()->route('guru.login');
+})->name('login');
 
 // ==========================================
 //                PANEL ADMIN
@@ -68,7 +73,6 @@ Route::prefix('admin')->group(function () {
 Route::prefix('guru')->group(function () {
     
     Route::middleware('guest:guru')->group(function () {
-        // UPDATE: Nama route diganti menjadi 'guru.login' agar sinkron dengan Controller
         Route::get('/login', [GuruAuthController::class, 'loginForm'])->name('guru.login');
         Route::post('/login', [GuruAuthController::class, 'login'])->name('guru.login.submit');
     });
