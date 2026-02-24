@@ -17,7 +17,8 @@ Route::get('/', function () {
     if (auth()->guard('web')->check()) {
         return redirect()->route('admin.dashboard');
     }
-    return redirect()->route('login');
+    // Arahkan ke login guru sebagai default landing page
+    return redirect()->route('guru.login'); 
 });
 
 // ==========================================
@@ -67,7 +68,8 @@ Route::prefix('admin')->group(function () {
 Route::prefix('guru')->group(function () {
     
     Route::middleware('guest:guru')->group(function () {
-        Route::get('/login', [GuruAuthController::class, 'loginForm'])->name('login');
+        // UPDATE: Nama route diganti menjadi 'guru.login' agar sinkron dengan Controller
+        Route::get('/login', [GuruAuthController::class, 'loginForm'])->name('guru.login');
         Route::post('/login', [GuruAuthController::class, 'login'])->name('guru.login.submit');
     });
 
