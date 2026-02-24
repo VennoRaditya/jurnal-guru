@@ -1,74 +1,55 @@
-    <?php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin; // Sesuaikan dengan namespace lo
 
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Auth;
-    use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\Controller;
+use App\Models\Guru;
+use App\Models\Kelas; // Pastikan Model Kelas di-import
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
-    class GuruAuthController extends Controller
+class GuruController extends Controller
+{
+    public function index()
     {
-        /**
-         * Menampilkan halaman login khusus guru.
-         */
-        public function loginForm()
-        {
-            // Cegah guru yang sudah login mengakses halaman login kembali
-            if (Auth::guard('guru')->check()) {
-                return redirect()->route('guru.dashboard');
-            }
-            
-            return view('guru.login');
-        }
+        // 1. Ambil data guru dengan pagination
+        $gurus = Guru::latest()->paginate(10);
 
-        /**
-         * Proses autentikasi login guru.
-         */
-        public function login(Request $request)
-        {
-            // 1. Validasi Input
-            $credentials = $request->validate([
-                'username' => ['required', 'string'],
-                'password' => ['required'],
-            ], [
-                'username.required' => 'Username wajib diisi.',
-                'password.required' => 'Password wajib diisi.',
-            ]);
+        // 2. AMBIL SEMUA DATA KELAS (Ini yang bikin form lo nggak kosong lagi)
+        $kelases = Kelas::all(); 
 
-            // 2. Attempt Login menggunakan Guard Guru
-            // Kita gunakan $request->has('remember') untuk fitur 'Ingat Saya'
-            if (Auth::guard('guru')->attempt($credentials, $request->boolean('remember'))) {
-                
-                // 3. Keamanan Session
-                $request->session()->regenerate();
-
-                // 4. Redirect ke Dashboard
-                // intended() akan mengirim user ke halaman yang mereka coba akses sebelumnya
-                return redirect()->intended(route('guru.dashboard'))
-                    ->with('success', 'Berhasil masuk. Selamat mengajar!');
-            }
-
-            // 5. Handle Gagal Login
-            throw ValidationException::withMessages([
-                'username' => ['Kredensial tersebut tidak cocok dengan data kami.'],
-            ]);
-        }
-
-        /**
-         * Proses logout guru.
-         */
-        public function logout(Request $request)
-        {
-            // Logout dari guard spesifik
-            Auth::guard('guru')->logout();
-
-            // Bersihkan session
-            $request->session()->invalidate();
-
-            // Regenerasi CSRF token untuk mencegah serangan CSRF pada session baru
-            $request->session()->regenerateToken();
-
-            return redirect()->route('guru.login')
-                ->with('success', 'Anda telah berhasil keluar dari sistem.');
-        }
+        // 3. Kirim ke view index.blade.php
+        return view('admin.guru.index', compact('gurus', 'kelases'));
     }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nip' => 'required|unique:gurus,nip',
+            'nama' => 'required',
+            'mapel' => 'required',
+            'username' => 'required|unique:gurus,username',
+            'password' => 'required|min:6',
+            'kelas' => 'nullable|array', // Menghandle checkbox kelas[]
+        ]);
+
+        Guru::create([
+            'nip' => $request->nip,
+            'nama' => $request->nama,
+            'mapel' => $request->mapel,
+            'username' => $request->username,
+            'password' => Hash::make($request->password), // Password harus di-hash
+            'kelas' => $request->kelas, // Laravel otomatis cast array ke JSON jika di model sudah di-cast
+        ]);
+
+        return redirect()->back()->with('success', 'Data Guru berhasil didaftarkan.');
+    }
+
+    public function destroy($id)
+    {
+        $guru = Guru::findOrFail($id);
+        $guru->delete();
+
+        return redirect()->back()->with('success', 'Data Guru berhasil dihapus.');
+    }
+}

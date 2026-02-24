@@ -9,12 +9,11 @@
     <style>
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #0f172a; /* Warna dasar gelap yang elegan */
+            background: #0f172a;
             position: relative;
             overflow-x: hidden;
         }
 
-        /* Background Animasi Abstract */
         .bg-blob {
             position: absolute;
             width: 500px;
@@ -112,17 +111,18 @@
         <form method="POST" action="{{ route('guru.login.submit') }}" class="space-y-6">
             @csrf
 
+            {{-- UPDATE: LOGIN MENGGUNAKAN USERNAME --}}
             <div class="space-y-2">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-2">Email Address</label>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-2">Username</label>
                 <div class="relative">
                     <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </span>
-                    <input type="email" name="email" required
+                    <input type="text" name="username" required
                         class="input-field w-full pl-14 pr-6 py-4 rounded-2xl outline-none text-sm font-semibold" 
-                        placeholder="guru@smkn43.sch.id">
+                        placeholder="Masukkan username">
                 </div>
             </div>
 

@@ -58,7 +58,7 @@
                         <div class="flex gap-2 bg-slate-100 p-1 rounded-xl">
                             @foreach(['10', '11', '12'] as $t)
                                 <button type="button" @click="level = '{{ $t }}'" 
-                                    :class="level === '{{ $t }}' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'"
+                                    :class="level === '{{ $t }}' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'"
                                     class="px-4 py-1.5 rounded-lg text-[9px] font-black transition-all uppercase">
                                     Kelas {{ $t }}
                                 </button>
@@ -66,11 +66,15 @@
                         </div>
                     </div>
 
-                    <div class="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100">
+                    <div class="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 min-h-[250px]">
                         @php 
-                            // Grouping dinamis berdasarkan angka pertama di nama_kelas
+                            // Logic Grouping: Mencari angka 10, 11, atau 12 di dalam string nama_kelas
                             $groupedKelas = $kelases->groupBy(function($item) {
-                                return preg_replace('/[^0-9]/', '', explode(' ', $item->nama_kelas)[0]);
+                                $name = strtoupper($item->nama_kelas);
+                                if (str_contains($name, '10') || str_contains($name, 'X ') || $name == 'X') return '10';
+                                if (str_contains($name, '11') || str_contains($name, 'XI')) return '11';
+                                if (str_contains($name, '12') || str_contains($name, 'XII')) return '12';
+                                return 'lainnya';
                             });
                         @endphp
 
@@ -82,17 +86,17 @@
                                 
                                 @if(isset($groupedKelas[$lvl]))
                                     @foreach($groupedKelas[$lvl] as $kelas)
-                                        <label class="relative group">
+                                        <label class="relative group cursor-pointer">
                                             <input type="checkbox" name="kelas[]" value="{{ $kelas->nama_kelas }}" class="peer hidden">
                                             
-                                            <div class="bg-white border-2 border-transparent peer-checked:border-blue-500 peer-checked:bg-blue-50/50 p-4 rounded-2xl transition-all cursor-pointer hover:shadow-md text-center">
+                                            <div class="bg-white border-2 border-transparent peer-checked:border-blue-500 peer-checked:bg-blue-50/50 p-4 rounded-2xl transition-all hover:shadow-md text-center">
                                                 <span class="block text-[10px] font-black text-slate-700 uppercase">
                                                     {{ $kelas->nama_kelas }}
                                                 </span>
-                                                <span class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Pilih Ruangan</span>
+                                                <span class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter italic">Pilih Ruangan</span>
                                             </div>
                                             
-                                            <div class="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full p-1 opacity-0 peer-checked:opacity-100 transition-opacity">
+                                            <div class="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full p-1 opacity-0 peer-checked:opacity-100 transition-opacity shadow-lg border-2 border-white">
                                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"/>
                                                 </svg>
@@ -100,8 +104,11 @@
                                         </label>
                                     @endforeach
                                 @else
-                                    <div class="col-span-full py-10 text-center border-2 border-dashed border-slate-200 rounded-3xl">
-                                        <span class="text-[9px] font-bold text-slate-400 uppercase italic">Belum ada data kelas untuk level {{ $lvl }}</span>
+                                    <div class="col-span-full py-16 text-center border-2 border-dashed border-slate-200 rounded-3xl">
+                                        <div class="opacity-20 mb-2">
+                                            <svg class="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                        </div>
+                                        <span class="text-[9px] font-bold text-slate-400 uppercase italic tracking-[0.2em]">Belum ada data kelas level {{ $lvl }}</span>
                                     </div>
                                 @endif
                             </div>
@@ -111,7 +118,7 @@
             </div>
 
             <div class="mt-10 flex justify-end">
-                <button type="submit" class="w-full md:w-72 bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-blue-200 active:scale-95">
+                <button type="submit" class="w-full md:w-72 bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-blue-100 active:scale-95">
                     Simpan Guru & Akun
                 </button>
             </div>
@@ -172,7 +179,7 @@
                                         {{ $k }}
                                     </span>
                                 @empty
-                                    <span class="text-[9px] text-slate-300 italic">Belum setting kelas</span>
+                                    <span class="text-[9px] text-slate-300 italic uppercase">Belum setting kelas</span>
                                 @endforelse
                             </div>
                         </td>
@@ -220,15 +227,17 @@
 </div>
 
 <style>
-    /* Custom Scrollbar for the Class Selection */
-    .bg-slate-50::-webkit-scrollbar { width: 4px; }
-    .bg-slate-50::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-    
-    /* Pagination Styling Custom */
+    /* Styling khusus agar pagination Laravel menyatu dengan tema */
     .pagination-premium nav { @apply flex justify-center; }
     .pagination-premium .pagination { @apply flex gap-2 border-none; }
-    .pagination-premium .page-item .page-link { @apply rounded-xl border-none bg-white text-[10px] font-black text-slate-500 px-4 py-2.5 shadow-sm hover:bg-blue-600 hover:text-white transition-all; }
-    .pagination-premium .page-item.active .page-link { @apply bg-blue-600 text-white shadow-lg shadow-blue-100; }
-    .pagination-premium .page-item.disabled .page-link { @apply opacity-50 bg-transparent shadow-none; }
+    .pagination-premium .page-item .page-link { 
+        @apply rounded-xl border-none bg-white text-[10px] font-black text-slate-500 px-4 py-2.5 shadow-sm hover:bg-blue-600 hover:text-white transition-all; 
+    }
+    .pagination-premium .page-item.active .page-link { 
+        @apply bg-blue-600 text-white shadow-lg shadow-blue-100; 
+    }
+    .pagination-premium .page-item.disabled .page-link { 
+        @apply opacity-50 bg-transparent shadow-none; 
+    }
 </style>
 @endsection

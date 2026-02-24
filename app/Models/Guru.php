@@ -18,8 +18,8 @@ class Guru extends Authenticatable
         'username', 
         'password', 
         'mapel',
-        'kelas', // Menambahkan kolom kelas yang baru dibuat di migration
-        'email', // Tetap ada jika Anda masih ingin menggunakan email
+        'kelas', 
+        'email', 
     ];
 
     protected $hidden = [
@@ -30,5 +30,9 @@ class Guru extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed', 
+        // TAMBAHKAN BARIS INI:
+        // Ini otomatis mengubah array dari form menjadi JSON saat disimpan,
+        // dan mengubah JSON menjadi array kembali saat dipanggil di Blade.
+        'kelas' => 'array', 
     ];
-}   
+}

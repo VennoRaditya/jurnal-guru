@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Guru;
-use App\Models\Kelas; // Pastikan Model Kelas sudah dibuat
+use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,10 +16,7 @@ class GuruAuthController extends Controller
      */
     public function index()
     {
-        // Mengambil data guru dengan pagination
         $gurus = Guru::latest()->paginate(10);
-        
-        // Mengambil semua data kelas untuk ditampilkan di checkbox
         $kelases = Kelas::all();
 
         return view('admin.guru', compact('gurus', 'kelases'));
@@ -35,6 +32,7 @@ class GuruAuthController extends Controller
             'nama'     => 'required|string|max:255',
             'mapel'    => 'required|string',
             'username' => 'required|unique:gurus,username',
+            'email'    => 'nullable|email|unique:gurus,email', // Ditambahkan agar sinkron dengan migration
             'password' => 'required|min:6',
             'kelas'    => 'nullable|array',
         ]);
@@ -44,8 +42,10 @@ class GuruAuthController extends Controller
             'nama'     => $request->nama,
             'mapel'    => $request->mapel,
             'username' => $request->username,
-            'password' => Hash::make($request->password), // Password di-hash
-            'kelas'    => $request->kelas, // Disimpan sebagai array (pastikan casts di model)
+            // Jika email kosong, kita buatkan dummy berdasarkan username
+            'email'    => $request->email ?? $request->username . '@smkn43.sch.id', 
+            'password' => Hash::make($request->password),
+            'kelas'    => $request->kelas, 
         ]);
 
         return redirect()->back()->with('success', 'Guru baru berhasil didaftarkan!');
@@ -66,28 +66,34 @@ class GuruAuthController extends Controller
 
     public function loginForm()
     {
+        // Jika sudah login, lempar ke dashboard
         if (Auth::guard('guru')->check()) {
             return redirect()->route('guru.dashboard');
         }
         return view('guru.login');
     }
 
+    /**
+     * Login menggunakan USERNAME
+     */
     public function login(Request $request)
     {
+        // Validasi input username dan password
         $credentials = $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required'],
         ]);
 
+        // Attempt login menggunakan guard guru
         if (Auth::guard('guru')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+            
             return redirect()->intended(route('guru.dashboard'))
                 ->with('success', 'Berhasil masuk. Selamat mengajar!');
         }
 
-        throw ValidationException::withMessages([
-            'username' => ['Kredensial tersebut tidak cocok dengan data kami.'],
-        ]);
+        // Jika gagal, kembalikan dengan pesan error
+        return back()->with('error', 'Username atau password tidak cocok dengan data kami.');
     }
 
     public function logout(Request $request)
