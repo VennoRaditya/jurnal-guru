@@ -3,21 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Siswa;
+use App\Models\Kelas;
 use Illuminate\Http\Request;
+use App\Imports\SiswaImport; 
+use Maatwebsite\Excel\Facades\Excel; 
+use Illuminate\Support\Facades\Response; 
+use Illuminate\Support\Facades\Log;
 
 class SiswaController extends Controller
 {
+    /**
+     * Menampilkan daftar siswa
+     */
     public function index(Request $request)
     {
-        $query = Siswa::query();
+        $query = Siswa::with('kelas');
 
-        // 1. Logika Filter Berdasarkan Dropdown (Tingkat & Jurusan)
-        if ($request->filled('tingkat') && $request->filled('jurusan')) {
-            $namaKelas = $request->tingkat . ' ' . $request->jurusan;
-            $query->where('kelas', $namaKelas);
+        if ($request->filled('kelas_id')) {
+            $query->where('kelas_id', $request->kelas_id);
         }
 
-        // 2. Logika Search (Nama atau NIS)
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->search . '%')
@@ -25,51 +30,118 @@ class SiswaController extends Controller
             });
         }
 
-        // Ambil data terbaru dengan pagination
         $siswas = $query->latest()->paginate(10);
+        $kelases = Kelas::all();
 
-        return view('guru.siswa.index', compact('siswas'));
+        return view('guru.siswa.index', compact('siswas', 'kelases'));
     }
 
+    /**
+     * Simpan Siswa Manual
+     */
     public function store(Request $request)
     {
-        // 1. PROSES PENGGABUNGAN KELAS (Anti-Error)
-        // Kita ambil data langsung dari dropdown temp agar tidak bergantung pada JavaScript
-        $tingkat = $request->input('tingkat_temp');
-        $jurusan = $request->input('jurusan_temp');
-        
-        // Gabungkan secara manual di server side
-        $gabungKelas = ($tingkat && $jurusan) ? $tingkat . ' ' . $jurusan : null;
-
-        // Masukkan kembali ke request agar bisa divalidasi oleh 'kelas' => 'required'
-        $request->merge(['kelas' => $gabungKelas]);
-
-        // 2. VALIDASI
         $request->validate([
-            'nis'   => 'required|unique:siswas,nis',
-            'nama'  => 'required|string|max:255',
-            'kelas' => 'required|string', 
+            'nis'      => 'required|unique:siswas,nis',
+            'nama'     => 'required|string|max:255',
+            'jk'       => 'required|in:L,P',
+            'kelas_id' => 'required|exists:kelas,id', 
         ], [
-            'nis.unique'     => 'NIS ini sudah terdaftar.',
-            'kelas.required' => 'Mohon pilih Tingkat dan Jurusan terlebih dahulu!',
+            'nis.unique'        => 'NIS/NISN ini sudah terdaftar di kelas lain.',
+            'kelas_id.required' => 'Terjadi kesalahan: ID Kelas tidak ditemukan.',
         ]);
 
-        // 3. EKSEKUSI SIMPAN
         Siswa::create([
-            'nis'   => $request->nis,
-            'nama'  => $request->nama,
-            'kelas' => $request->kelas, // Sekarang variabel ini DIJAMIN ada isinya
+            'nis'      => $request->nis,
+            'nama'     => strtoupper($request->nama),
+            'jk'       => $request->jk,
+            'kelas_id' => $request->kelas_id,
         ]);
 
-        return back()->with('success', 'Murid ' . $request->nama . ' berhasil ditambahkan ke kelas ' . $request->kelas);
+        return back()->with('success', 'Siswa ' . strtoupper($request->nama) . ' berhasil ditambahkan!');
     }
 
+    /**
+     * Fitur Import Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file'     => 'required|mimes:xlsx,xls,csv|max:2048',
+            'kelas_id' => 'required|exists:kelas,id'
+        ], [
+            'file.required' => 'File Excel wajib diunggah.',
+            'file.mimes'    => 'Format file harus .xlsx, .xls, atau .csv',
+            'file.max'      => 'Ukuran file maksimal 2MB'
+        ]);
+
+        try {
+            // Kita bungkus proses import
+            Excel::import(new SiswaImport($request->kelas_id), $request->file('file'));
+            
+            return back()->with('success', 'Data berhasil di-import ke kelas yang dipilih.');
+
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            // Menangkap error validasi data (misal NIS duplikat di tengah baris)
+            $failures = $e->failures();
+            return back()->with('error', 'Validasi gagal di baris ' . $failures[0]->row() . ': ' . $failures[0]->errors()[0]);
+
+        } catch (\ErrorException $e) {
+            // Menangkap error jika kolom di Excel tidak ada (Undefined index)
+            return back()->with('error', 'Kolom Excel tidak dikenali. Pastikan Header sesuai template (nis, nama, jk).');
+
+        } catch (\Exception $e) {
+            // Menangkap error sistem lainnya
+            Log::error($e->getMessage());
+            return back()->with('error', 'Gagal memproses file: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download Template CSV
+     */
+    public function downloadTemplate()
+    {
+        // Gunakan nama kolom huruf kecil agar sinkron dengan $row['nis'], dll di Import
+        $columns = ['nis', 'nama', 'jk'];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            
+            // Tambahkan BOM agar Excel tidak berantakan saat baca CSV
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            fputcsv($file, $columns);
+            
+            // Baris Contoh (Dummy)
+            fputcsv($file, ['1234567890', 'AHMAD JUNAEDI', 'L']);
+            fputcsv($file, ['1234567891', 'SITI AISYAH', 'P']);
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=template_siswa_import.csv",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ]);
+    }
+
+    /**
+     * Hapus Siswa
+     */
     public function destroy($id)
     {
-        $siswa = Siswa::findOrFail($id);
-        $nama = $siswa->nama;
-        $siswa->delete();
+        try {
+            $siswa = Siswa::findOrFail($id);
+            $nama = $siswa->nama;
+            $siswa->delete();
 
-        return redirect()->back()->with('success', "Data murid $nama berhasil dihapus!");
+            return back()->with('success', "Siswa $nama telah berhasil dihapus.");
+        } catch (\Exception $e) {
+            return back()->with('error', "Gagal menghapus data.");
+        }
     }
 }

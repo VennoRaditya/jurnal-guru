@@ -13,8 +13,13 @@ return new class extends Migration
     {
         Schema::create('kelas', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_kelas'); // Contoh: X-RPL, XI-TKJ
-            $table->foreignId('guru_id')->constrained('gurus'); // Wali Kelas
+            $table->string('nama_kelas'); 
+            // Tambahkan nullable() agar tidak error saat guru belum dipilih
+            // Tambahkan onDelete('set null') agar jika guru dihapus, kelas tidak ikut terhapus
+            $table->foreignId('guru_id')
+                  ->nullable() 
+                  ->constrained('gurus')
+                  ->onDelete('set null'); 
             $table->timestamps();
         });
     }

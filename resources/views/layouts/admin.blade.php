@@ -6,6 +6,7 @@
     <title>@yield('title') | Admin Panel 43</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
@@ -14,26 +15,22 @@
             letter-spacing: -0.025em;
         }
         
-        /* Animasi Transisi Sidebar */
         .sidebar-transition { 
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
         }
 
-        /* State Navigasi Aktif */
         .nav-link-active {
             background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0) 100%);
             color: #60a5fa;
             border-left: 4px solid #3b82f6;
         }
 
-        /* Efek Glassmorphism Header */
         .glass-header {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
 
-        /* Custom Scrollbar untuk Admin (Dark Theme) */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
@@ -72,6 +69,7 @@
             <nav class="flex-1 px-4 space-y-1.5 overflow-y-auto">
                 <p class="px-6 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] mb-4">Core Management</p>
                 
+                {{-- Menu Dashboard --}}
                 <a href="{{ route('admin.dashboard') }}" 
                    class="group flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,6 +78,7 @@
                     Dashboard Analytics
                 </a>
 
+                {{-- Menu Tenaga Pengajar --}}
                 <a href="{{ route('admin.guru.index') }}" 
                    class="group flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 {{ request()->routeIs('admin.guru.*') ? 'nav-link-active' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,23 +87,24 @@
                     Tenaga Pengajar
                 </a>
 
-                <a href="{{ route('admin.siswa.index') }}" 
-                   class="group flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 {{ request()->routeIs('admin.siswa.*') ? 'nav-link-active' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}">
+                {{-- Menu Ruang Kelas --}}
+                <a href="{{ route('admin.kelas.index') }}" 
+                   class="group flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 {{ request()->routeIs('admin.kelas.*') ? 'nav-link-active' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
-                    Peserta Didik
+                    Ruang Kelas
                 </a>
             </nav>
 
             <div class="p-6">
                 <div class="bg-slate-800/40 border border-slate-700/50 rounded-[2.5rem] p-6 text-center">
                     <div class="flex flex-col items-center mb-5">
-                        <div class="w-12 h-12 rounded-2xl bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-black text-sm shadow-lg mb-3 border border-white/10">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-black text-sm shadow-lg mb-3 border border-white/10 text-white">
                             {{ substr(auth()->user()->name, 0, 1) }}
                         </div>
                         <div class="overflow-hidden w-full">
-                            <p class="text-[10px] font-black uppercase truncate tracking-wider">{{ auth()->user()->name }}</p>
+                            <p class="text-[10px] font-black uppercase truncate tracking-wider text-white">{{ auth()->user()->name }}</p>
                             <p class="text-[8px] font-bold text-blue-400 uppercase tracking-[0.2em] mt-1">System Overlord</p>
                         </div>
                     </div>
@@ -183,7 +183,6 @@
         
         overlay.addEventListener('click', toggleAdminSidebar);
 
-        // Close sidebar on ESC key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !sidebar.classList.contains('-translate-x-full')) {
                 toggleAdminSidebar();

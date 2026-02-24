@@ -2,73 +2,101 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Guru;
+use App\Models\Kelas; // Pastikan Model Kelas sudah dibuat
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Guru;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class GuruAuthController extends Controller
 {
+    /**
+     * Menampilkan daftar guru dan form registrasi (Halaman Kelola Guru)
+     */
+    public function index()
+    {
+        // Mengambil data guru dengan pagination
+        $gurus = Guru::latest()->paginate(10);
+        
+        // Mengambil semua data kelas untuk ditampilkan di checkbox
+        $kelases = Kelas::all();
+
+        return view('admin.guru', compact('gurus', 'kelases'));
+    }
+
+    /**
+     * Menyimpan data guru baru dari form registrasi
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nip'      => 'required|unique:gurus,nip',
+            'nama'     => 'required|string|max:255',
+            'mapel'    => 'required|string',
+            'username' => 'required|unique:gurus,username',
+            'password' => 'required|min:6',
+            'kelas'    => 'nullable|array',
+        ]);
+
+        Guru::create([
+            'nip'      => $request->nip,
+            'nama'     => $request->nama,
+            'mapel'    => $request->mapel,
+            'username' => $request->username,
+            'password' => Hash::make($request->password), // Password di-hash
+            'kelas'    => $request->kelas, // Disimpan sebagai array (pastikan casts di model)
+        ]);
+
+        return redirect()->back()->with('success', 'Guru baru berhasil didaftarkan!');
+    }
+
+    /**
+     * Menghapus data guru
+     */
+    public function destroy($id)
+    {
+        $guru = Guru::findOrFail($id);
+        $guru->delete();
+
+        return redirect()->back()->with('success', 'Data guru berhasil dihapus.');
+    }
+
+    /* --- LOGIC AUTHENTIKASI --- */
+
     public function loginForm()
     {
-        // Jika sudah login sebagai guru, langsung ke dashboard
         if (Auth::guard('guru')->check()) {
             return redirect()->route('guru.dashboard');
         }
-        
-        // Antisipasi: Jika sedang login sebagai ADMIN, logoutkan dulu atau redirect
-        if (Auth::guard('web')->check()) {
-            // Bisa pilih: logout admin dulu atau biarkan. 
-            // Tapi sebaiknya admin tidak bisa akses halaman login guru tanpa logout.
-        }
-
         return view('guru.login');
     }
 
     public function login(Request $request)
     {
-        // 1. Validasi Input
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'username' => ['required', 'string'],
             'password' => ['required'],
-        ], [
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'password.required' => 'Password wajib diisi.',
         ]);
 
-        $remember = $request->has('remember');
-
-        // 2. Eksekusi Login dengan Guard 'guru'
-        if (Auth::guard('guru')->attempt($credentials, $remember)) {
-            
-            // WAJIB: Regenerate session untuk keamanan dan menghindari 419 setelah login
+        if (Auth::guard('guru')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-
             return redirect()->intended(route('guru.dashboard'))
-                             ->with('success', 'Selamat datang kembali!');
+                ->with('success', 'Berhasil masuk. Selamat mengajar!');
         }
 
-        // --- LOGIKA PENGECEKAN ERROR SPESIFIK ---
-        $user = Guru::where('email', $request->email)->first();
-        
-        if (!$user) {
-            return back()->with('error', 'Email tidak terdaftar dalam sistem Guru.');
-        }
-
-        // Jika email ada tapi gagal login, berarti password salah
-        return back()->withInput($request->only('email'))
-                     ->with('error', 'Password yang Anda masukkan salah!');
+        throw ValidationException::withMessages([
+            'username' => ['Kredensial tersebut tidak cocok dengan data kami.'],
+        ]);
     }
 
     public function logout(Request $request)
     {
         Auth::guard('guru')->logout();
-        
-        // Hapus semua session untuk memastikan tidak ada sisa token yang bentrok
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
-        return redirect()->route('admin.login')->with('success', 'Berhasil logout dari Portal Guru.');
+
+        return redirect()->route('guru.login')
+            ->with('success', 'Anda telah berhasil keluar dari sistem.');
     }
 }

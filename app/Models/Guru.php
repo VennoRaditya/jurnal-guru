@@ -14,11 +14,12 @@ class Guru extends Authenticatable
 
     protected $fillable = [
         'nip',
-        'username', // Penting agar tidak kena error Integrity Constraint lagi
         'nama', 
-        'email', 
+        'username', 
         'password', 
-        'mapel' // Diseragamkan dengan Controller dan Migration
+        'mapel',
+        'kelas', // Menambahkan kolom kelas yang baru dibuat di migration
+        'email', // Tetap ada jika Anda masih ingin menggunakan email
     ];
 
     protected $hidden = [
@@ -30,4 +31,4 @@ class Guru extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed', 
     ];
-}
+}   
