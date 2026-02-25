@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Siswa;
 use App\Models\Materi;
 use App\Models\Absensi;
-use App\Models\Kelas; // Tambahkan ini
+use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -44,13 +44,12 @@ class AbsensiController extends Controller
             return redirect()->back()->with('error', "Data struktur kelas $kelas_nama tidak ditemukan di database.");
         }
 
-        // 2. Ambil siswa berdasarkan kelas_id (ini yang bikin data muncul!)
+        // 2. Ambil siswa berdasarkan kelas_id
         $siswas = Siswa::where('kelas_id', $kelas->id)
                     ->orderBy('nama', 'asc')
                     ->get();
 
         // 3. Fallback: Jika kelas_id kosong, coba cari manual via string 'kelas' 
-        // (Hanya untuk jaga-jaga jika ada data lama yang belum ter-update kelas_id-nya)
         if ($siswas->isEmpty()) {
             $siswas = Siswa::where('kelas', 'LIKE', '%' . $kelas_nama . '%')
                         ->orderBy('nama', 'asc')
@@ -60,7 +59,7 @@ class AbsensiController extends Controller
         return view('guru.absensi.index', [
             'siswas' => $siswas,
             'kelas_nama' => $kelas_nama,
-            'kelas_id' => $kelas->id // Kirim ID kelas juga ke view
+            'kelas_id' => $kelas->id 
         ]);
     }
 
@@ -69,25 +68,33 @@ class AbsensiController extends Controller
      */
     public function storeJurnal(Request $request)
     {
+        // Validasi disesuaikan dengan atribut name di file Blade
         $request->validate([
-            'judul_materi'   => 'required|string|max:255',
-            'pembahasan'     => 'required',
-            'mata_pelajaran' => 'required|string|max:255',
-            'kelas'          => 'required',
-            'absen'          => 'required|array',
+            'materi_kd'             => 'required|string|max:255',
+            'kegiatan_pembelajaran' => 'required|string',
+            'evaluasi'              => 'required|string',
+            'mata_pelajaran'        => 'required|string|max:255',
+            'kelas'                 => 'required|string',
+            'absen'                 => 'required|array',
+        ], [
+            // Pesan error custom agar user tidak bingung
+            'materi_kd.required' => 'Kolom Materi / KD wajib diisi.',
+            'kegiatan_pembelajaran.required' => 'Kolom Kegiatan Pembelajaran wajib diisi.',
+            'evaluasi.required' => 'Kolom Penilaian / Evaluasi wajib diisi.',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Simpan Jurnal Materi
+            // Simpan Jurnal Materi (Pastikan kolom di DB sudah sesuai atau update model Materi)
             $materi = Materi::create([
-                'guru_id'        => Auth::guard('guru')->id(),
-                'judul_materi'   => $request->judul_materi,
-                'pembahasan'     => $request->pembahasan,
-                'mata_pelajaran' => $request->mata_pelajaran,
-                'kelas'          => $request->kelas, // Simpan nama kelas
-                'tanggal'        => now()->toDateString(),
+                'guru_id'               => Auth::guard('guru')->id(),
+                'materi_kd'             => $request->materi_kd,
+                'kegiatan_pembelajaran' => $request->kegiatan_pembelajaran,
+                'evaluasi'              => $request->evaluasi,
+                'mata_pelajaran'        => $request->mata_pelajaran,
+                'kelas'                 => $request->kelas,
+                'tanggal'               => now()->toDateString(),
             ]);
 
             $dataAbsensi = [];
@@ -102,7 +109,7 @@ class AbsensiController extends Controller
                 ];
             }
             
-            // Insert massal untuk performa lebih cepat
+            // Insert massal untuk performa
             Absensi::insert($dataAbsensi);
 
             DB::commit();
@@ -120,10 +127,13 @@ class AbsensiController extends Controller
         }
     }
 
+    /**
+     * Riwayat Jurnal
+     */
     public function index() 
     {
         $riwayatMateri = Materi::where('guru_id', Auth::guard('guru')->id())
-            ->latest()
+            ->latest('tanggal')
             ->paginate(10);
 
         return view('guru.materi.index', compact('riwayatMateri'));

@@ -47,9 +47,7 @@ Route::prefix('admin')->group(function () {
         Route::prefix('kelas-manage')->name('admin.kelas.')->group(function () {
             Route::get('/', [KelasController::class, 'index'])->name('index');
             Route::post('/store', [KelasController::class, 'store'])->name('store');
-            Route::delete('/{id}', [KelasController::class, 'destroy'])->name('destroy'); // Parameter konsisten pakai {id}
-            
-            // Route untuk Fetch data siswa (Alpine.js)
+            Route::delete('/{id}', [KelasController::class, 'destroy'])->name('destroy');
             Route::get('/{id}/siswa', [SiswaController::class, 'getSiswaByKelas'])->name('getSiswa');
         });
 
@@ -79,15 +77,19 @@ Route::prefix('guru')->group(function () {
         Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('guru.dashboard');
         Route::get('/siswa', [SiswaController::class, 'index'])->name('guru.siswa.index');
 
+        // PRESENSI & JURNAL INPUT
         Route::prefix('presensi')->name('guru.presensi.')->group(function () {
             Route::get('/pilih-kelas', [AbsensiController::class, 'selectClass'])->name('select');
             Route::get('/isi-jurnal', [AbsensiController::class, 'create'])->name('create');
             Route::post('/store', [AbsensiController::class, 'storeJurnal'])->name('storeJurnal');
         });
 
-        Route::get('/riwayat-materi', [AbsensiController::class, 'index'])->name('guru.materi.index');
-        Route::get('/arsip-absen', [AbsensiController::class, 'index'])->name('guru.absensi.index');
+        // REKAP PDF (Fitur Baru)
+        Route::get('/rekap-mingguan/download', [MateriController::class, 'downloadRekap'])->name('guru.rekap.download');
 
+        // MATERI & RIWAYAT MANAGE
+        Route::get('/riwayat-materi', [MateriController::class, 'index'])->name('guru.materi.index');
+        
         Route::prefix('materi-manage')->name('guru.materi.')->group(function () {
             Route::get('/{id}/edit', [MateriController::class, 'edit'])->name('edit'); 
             Route::put('/{id}', [MateriController::class, 'update'])->name('update'); 

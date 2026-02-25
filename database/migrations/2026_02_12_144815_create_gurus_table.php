@@ -17,10 +17,12 @@ return new class extends Migration
             $table->string('username')->unique(); 
             $table->string('nama');
             $table->string('mapel'); 
-            // Tambahkan kolom kelas di bawah ini:
-            // Kita gunakan text karena akan menyimpan data array/JSON
-            $table->text('kelas')->nullable(); 
-            $table->string('email')->unique()->nullable(); // nullable jika email tidak wajib
+            
+            // Perbaikan: Gunakan json() agar lebih optimal untuk data array dari checkbox
+            // Jika database Anda versi sangat lama, bisa tetap pakai text()
+            $table->json('kelas')->nullable(); 
+            
+            $table->string('email')->unique()->nullable(); 
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

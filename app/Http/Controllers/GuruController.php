@@ -1,55 +1,47 @@
 <?php
 
-namespace App\Http\Controllers\Admin; // Sesuaikan dengan namespace lo
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Guru;
-use App\Models\Kelas; // Pastikan Model Kelas di-import
+use App\Models\Materi; // Model yang menyimpan jurnal (KD, Kegiatan, Evaluasi)
+use App\Models\Absensi;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
-class GuruController extends Controller
+class AbsensiController extends Controller
 {
-    public function index()
+    // ... Method index & store yang sudah kamu punya ...
+
+    /**
+     * Fitur Rekap Mingguan ke PDF
+     */
+    public function downloadRekap(Request $request)
     {
-        // 1. Ambil data guru dengan pagination
-        $gurus = Guru::latest()->paginate(10);
+        // 1. Tentukan rentang waktu (Minggu ini: Senin sampai Minggu)
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
 
-        // 2. AMBIL SEMUA DATA KELAS (Ini yang bikin form lo nggak kosong lagi)
-        $kelases = Kelas::all(); 
+        // 2. Ambil data Jurnal/Materi milik guru yang sedang login di minggu ini
+        $jurnals = Materi::where('guru_id', Auth::guard('guru')->id())
+            ->whereBetween('tanggal', [$startOfWeek, $endOfWeek])
+            ->orderBy('tanggal', 'asc')
+            ->get();
 
-        // 3. Kirim ke view index.blade.php
-        return view('admin.guru.index', compact('gurus', 'kelases'));
-    }
+        // 3. Siapkan data untuk dikirim ke View PDF
+        $data = [
+            'title'     => 'LAPORAN REKAP PEMBELAJARAN MINGGUAN',
+            'periode'   => $startOfWeek->translatedFormat('d F') . ' - ' . $endOfWeek->translatedFormat('d F Y'),
+            'nama_guru' => Auth::guard('guru')->user()->nama,
+            'nip'       => Auth::guard('guru')->user()->nip,
+            'jurnals'   => $jurnals
+        ];
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'nip' => 'required|unique:gurus,nip',
-            'nama' => 'required',
-            'mapel' => 'required',
-            'username' => 'required|unique:gurus,username',
-            'password' => 'required|min:6',
-            'kelas' => 'nullable|array', // Menghandle checkbox kelas[]
-        ]);
+        // 4. Generate PDF dengan layout Landscape agar tabel muat
+        $pdf = Pdf::loadView('guru.absensi.rekap_pdf', $data)
+                  ->setPaper('a4', 'landscape');
 
-        Guru::create([
-            'nip' => $request->nip,
-            'nama' => $request->nama,
-            'mapel' => $request->mapel,
-            'username' => $request->username,
-            'password' => Hash::make($request->password), // Password harus di-hash
-            'kelas' => $request->kelas, // Laravel otomatis cast array ke JSON jika di model sudah di-cast
-        ]);
-
-        return redirect()->back()->with('success', 'Data Guru berhasil didaftarkan.');
-    }
-
-    public function destroy($id)
-    {
-        $guru = Guru::findOrFail($id);
-        $guru->delete();
-
-        return redirect()->back()->with('success', 'Data Guru berhasil dihapus.');
+        // 5. Download file
+        return $pdf->download('Rekap_Jurnal_' . $startOfWeek->format('Y-m-d') . '.pdf');
     }
 }
