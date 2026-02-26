@@ -153,7 +153,7 @@
                 <button type="submit" @if($siswas->isEmpty()) disabled @endif 
                     class="group relative w-full md:w-auto overflow-hidden {{ $siswas->isEmpty() ? 'bg-slate-300' : 'bg-slate-900' }} text-white px-14 py-5 rounded-3xl text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-blue-600 hover:shadow-2xl hover:shadow-blue-500/30 active:scale-95">
                     <span class="relative z-10">Simpan Laporan & Absensi</span>
-                    <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="absolute inset-0 bg-linear-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </button>
             </div>
         </div>

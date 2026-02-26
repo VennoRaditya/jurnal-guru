@@ -75,19 +75,28 @@ Route::prefix('guru')->group(function () {
 
     Route::middleware('auth:guru')->group(function () {
         Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('guru.dashboard');
-        Route::get('/siswa', [SiswaController::class, 'index'])->name('guru.siswa.index');
 
-        // PRESENSI & JURNAL INPUT
+        // --- DAFTAR KETIDAKHADIRAN SISWA ---
+        // URL akses: 127.0.0.1:8000/guru/siswa/absensi
+        Route::prefix('siswa')->group(function() {
+            Route::get('/absensi', [AbsensiController::class, 'rekapHarian'])->name('guru.absensi.rekap');
+            
+            // CETAK PDF KHUSUS HARIAN (Mengarahkan ke pdf.blade.php melalui cetakHarian)
+            Route::get('/cetak-harian', [AbsensiController::class, 'cetakHarian'])->name('guru.absensi.cetakHarian');
+            
+            // CETAK PDF REKAP JURNAL/BULANAN (Mengarahkan ke rekap_pdf.blade.php melalui cetakPdf)
+            Route::get('/cetak-pdf', [AbsensiController::class, 'cetakPdf'])->name('guru.absensi.cetakPdf');
+        });
+
+        // --- PRESENSI & JURNAL INPUT ---
         Route::prefix('presensi')->name('guru.presensi.')->group(function () {
             Route::get('/pilih-kelas', [AbsensiController::class, 'selectClass'])->name('select');
             Route::get('/isi-jurnal', [AbsensiController::class, 'create'])->name('create');
             Route::post('/store', [AbsensiController::class, 'storeJurnal'])->name('storeJurnal');
         });
 
-        // REKAP PDF (Fitur Baru)
+        // --- REKAP & MATERI MANAGE ---
         Route::get('/rekap-mingguan/download', [MateriController::class, 'downloadRekap'])->name('guru.rekap.download');
-
-        // MATERI & RIWAYAT MANAGE
         Route::get('/riwayat-materi', [MateriController::class, 'index'])->name('guru.materi.index');
         
         Route::prefix('materi-manage')->name('guru.materi.')->group(function () {

@@ -5,21 +5,33 @@ namespace App\Http\Controllers;
 use App\Models\Materi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Barryvdh\DomPDF\Facade\Pdf; // Import PDF
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class MateriController extends Controller 
 {
     /**
-     * Menampilkan Arsip Materi Pembelajaran (Riwayat)
+     * Menampilkan Arsip Materi Pembelajaran (Riwayat dengan Filter Bulanan)
      */
-    public function index()
+    public function index(Request $request) // Tambahkan parameter Request
     {
-        // Gunakan with('presensis') agar tidak lambat (Eager Loading)
-        $riwayatMateri = Materi::with('presensis')
-            ->where('guru_id', Auth::guard('guru')->id())
+        $guru_id = Auth::guard('guru')->id();
+
+        // 1. Ambil input bulan_tahun, jika tidak ada default ke bulan saat ini
+        $periode = $request->query('bulan_tahun', now()->format('Y-m'));
+        
+        // 2. Parse menggunakan Carbon untuk mendapatkan tahun dan bulan
+        $date = Carbon::parse($periode);
+
+        // 3. Query dengan filter Tahun dan Bulan yang spesifik
+        // Gunakan with('absensi') sesuai relasi di model Anda
+        $riwayatMateri = Materi::with('absensi') 
+            ->where('guru_id', $guru_id)
+            ->whereYear('tanggal', $date->year)
+            ->whereMonth('tanggal', $date->month)
             ->latest('tanggal')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString(); // Menjaga parameter URL saat pindah halaman pagination
 
         return view('guru.materi.index', compact('riwayatMateri'));
     }
@@ -51,7 +63,7 @@ class MateriController extends Controller
     }
 
     /**
-     * Memperbarui Data Materi (Update sesuai kolom baru)
+     * Memperbarui Data Materi
      */
     public function update(Request $request, $id)
     {
@@ -98,7 +110,7 @@ class MateriController extends Controller
 
         Materi::create([
             'guru_id'               => Auth::guard('guru')->id(),
-            'mata_pelajaran'        => Auth::guard('guru')->user()->mapel, // Sesuaikan kolom di tabel guru
+            'mata_pelajaran'        => Auth::guard('guru')->user()->mapel, 
             'materi_kd'             => $request->materi_kd,
             'kegiatan_pembelajaran' => $request->kegiatan_pembelajaran,
             'evaluasi'              => $request->evaluasi,
