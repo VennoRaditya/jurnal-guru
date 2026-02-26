@@ -14,24 +14,46 @@
             letter-spacing: -0.02em;
         }
 
-        /* --- GLOBAL LOADER CSS --- */
+        /* --- GLOBAL LOADER CSS IMPROVED --- */
         #global-loader {
-            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
+
+        #global-loader.loader-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
         .loader-logo-pulse {
             animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
+
         @keyframes pulse-ring {
             0% { transform: scale(0.95); opacity: 0.5; }
             50% { transform: scale(1.05); opacity: 1; }
             100% { transform: scale(0.95); opacity: 0.5; }
         }
+
         @keyframes loading-bar {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(200%); }
         }
+
         .animate-loading-bar {
             animation: loading-bar 1.5s infinite linear;
+        }
+
+        .animate-spin-slow {
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
         /* ------------------------- */
 
@@ -62,7 +84,7 @@
 </head>
 <body class="bg-[#f8fafc] text-slate-900 overflow-x-hidden">
 
-    <div id="global-loader" class="fixed inset-0 z-9999 flex items-center justify-center bg-white shadow-2xl">
+    <div id="global-loader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
         <div class="flex flex-col items-center">
             <div class="relative mb-6">
                 <div class="absolute -inset-4 border-2 border-blue-50 rounded-full animate-spin-slow opacity-50"></div>
@@ -198,37 +220,52 @@
         const body = document.body;
 
         // --- GLOBAL LOADER LOGIC ---
-        // 1. Hilangkan loader saat halaman selesai dimuat
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                loader.classList.add('opacity-0');
-                setTimeout(() => {
-                    loader.style.visibility = 'hidden';
-                    loader.style.display = 'none';
-                }, 500);
-            }, 400); // Delay halus
-        });
+        function hideLoader() {
+            loader.classList.add('loader-hidden');
+        }
 
-        // 2. Munculkan loader saat klik link (berpindah halaman)
+        function showLoader() {
+            loader.classList.remove('loader-hidden');
+        }
+
+        // Hilangkan loader saat halaman selesai dimuat
+        window.addEventListener('load', hideLoader);
+
+        // Munculkan loader saat klik link (berpindah halaman)
         document.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', function(e) {
                 const href = this.getAttribute('href');
-                // Filter: Jangan trigger loader jika link kosong, anchor (#), atau download
-                if (href && !href.startsWith('#') && !this.target && !this.hasAttribute('download') && href !== 'javascript:void(0)') {
-                    loader.style.display = 'flex';
-                    loader.style.visibility = 'visible';
-                    loader.classList.remove('opacity-0');
+                const target = this.getAttribute('target');
+                
+                // JANGAN jalankan loader jika:
+                // 1. Link kosong atau anchor (#)
+                // 2. Link adalah javascript
+                // 3. Link membuka tab baru (PENTING untuk Cetak PDF)
+                // 4. Link adalah download
+                if (
+                    href && 
+                    !href.startsWith('#') && 
+                    href !== 'javascript:void(0)' && 
+                    target !== '_blank' && 
+                    !this.hasAttribute('download')
+                ) {
+                    showLoader();
                 }
             });
         });
 
-        // 3. Munculkan loader saat submit form
+        // Munculkan loader saat submit form
         document.querySelectorAll('form').forEach(form => {
             form.addEventListener('submit', function() {
-                loader.style.display = 'flex';
-                loader.style.visibility = 'visible';
-                loader.classList.remove('opacity-0');
+                showLoader();
             });
+        });
+
+        // Mencegah loader nyangkut saat klik tombol "Back" di browser
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                hideLoader();
+            }
         });
 
         // --- SIDEBAR LOGIC ---
