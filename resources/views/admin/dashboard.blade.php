@@ -10,7 +10,8 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
         
         {{-- Card: Tenaga Pengajar --}}
-        <div class="group relative bg-white p-6 md:p-8 rounded-4x1 md:rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-500 hover:shadow-blue-500/10 hover:-translate-y-1 md:hover:-translate-y-2 overflow-hidden">
+        {{-- TAMBAHAN: animate-fade-in-up & delay 100ms --}}
+        <div class="group relative bg-white p-6 md:p-8 rounded-4x1 md:rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-500 hover:shadow-blue-500/10 hover:-translate-y-1 md:hover:-translate-y-2 overflow-hidden animate-fade-in-up" style="animation-delay: 100ms">
             <div class="relative z-10">
                 <div class="flex items-center md:items-start justify-between mb-4 md:mb-8">
                     <div class="w-12 h-12 md:w-14 md:h-14 bg-linear-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
@@ -28,7 +29,8 @@
         </div>
 
         {{-- Card: Total Siswa --}}
-        <div class="group relative bg-white p-6 md:p-8 rounded-4x1 md:rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-500 hover:shadow-indigo-500/10 hover:-translate-y-1 md:hover:-translate-y-2 overflow-hidden">
+        {{-- TAMBAHAN: animate-fade-in-up & delay 200ms --}}
+        <div class="group relative bg-white p-6 md:p-8 rounded-4x1 md:rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-500 hover:shadow-indigo-500/10 hover:-translate-y-1 md:hover:-translate-y-2 overflow-hidden animate-fade-in-up" style="animation-delay: 200ms">
             <div class="relative z-10">
                 <div class="flex items-center md:items-start justify-between mb-4 md:mb-8">
                     <div class="w-12 h-12 md:w-14 md:h-14 bg-linear-to-br from-indigo-500 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
@@ -46,7 +48,8 @@
         </div>
 
         {{-- Card: Laporan Presensi --}}
-        <div class="relative bg-slate-900 p-6 md:p-8 rounded-4x1 md:rounded-[2.5rem] shadow-xl overflow-hidden group">
+        {{-- TAMBAHAN: animate-fade-in-up & delay 300ms --}}
+        <div class="relative bg-slate-900 p-6 md:p-8 rounded-4x1 md:rounded-[2.5rem] shadow-xl overflow-hidden group animate-fade-in-up" style="animation-delay: 300ms">
             <div class="relative z-10 h-full flex flex-col justify-between">
                 <div>
                     <div class="flex items-center gap-2 mb-3">
@@ -55,7 +58,7 @@
                     </div>
                     <h4 class="text-white font-black text-xl md:text-2xl tracking-tight leading-tight">Presensi Hari Ini</h4>
                 </div>
-                <a href="#" class="mt-6 inline-flex items-center justify-center gap-3 bg-white text-slate-900 px-5 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all">
+                <a href="#" class="mt-6 inline-flex items-center justify-center gap-3 bg-white text-slate-900 px-5 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95">
                     View Info
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </a>
@@ -65,7 +68,8 @@
 
     {{-- Recent Teachers Section --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10">
-        <div class="lg:col-span-2 bg-white rounded-4x1 md:rounded-[2.5rem] border border-slate-100 p-6 md:p-10 shadow-sm">
+        {{-- TAMBAHAN: animate-fade-in-up & delay 400ms --}}
+        <div class="lg:col-span-2 bg-white rounded-4x1 md:rounded-[2.5rem] border border-slate-100 p-6 md:p-10 shadow-sm animate-fade-in-up" style="animation-delay: 400ms">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
                     <h3 class="font-black text-slate-800 uppercase tracking-tighter text-xl md:text-2xl">Guru Terbaru</h3>
@@ -77,8 +81,9 @@
             </div>
 
             <div class="space-y-3">
-                @foreach(\App\Models\Guru::latest()->take(3)->get() as $guru)
-                <div class="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-50 hover:border-blue-100 transition-all">
+                @foreach(\App\Models\Guru::latest()->take(3)->get() as $index => $guru)
+                {{-- TAMBAHAN: staggered delay untuk list item --}}
+                <div class="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-50 hover:border-blue-100 transition-all animate-fade-in-right" style="animation-delay: {{ 500 + ($index * 100) }}ms">
                     <div class="flex items-center gap-3 md:gap-5">
                         <div class="w-10 h-10 md:w-12 md:h-12 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-500 text-sm">
                             {{ substr($guru->nama, 0, 1) }}
@@ -98,15 +103,41 @@
         </div>
 
         {{-- Help Card --}}
-        <div class="bg-linear-to-br from-blue-600 to-indigo-700 rounded-4x1 md:rounded-[2.5rem] p-8 md:p-10 text-white shadow-lg flex flex-col justify-between">
+        {{-- TAMBAHAN: animate-fade-in-up & delay 600ms --}}
+        <div class="bg-linear-to-br from-blue-600 to-indigo-700 rounded-4x1 md:rounded-[2.5rem] p-8 md:p-10 text-white shadow-lg flex flex-col justify-between animate-fade-in-up" style="animation-delay: 600ms">
             <div>
                 <h3 class="text-2xl font-black leading-tight tracking-tight mb-3">Butuh Bantuan?</h3>
                 <p class="text-blue-100/80 text-xs font-medium leading-relaxed">Hubungi Tim IT untuk kendala database sistem.</p>
             </div>
-            <button class="mt-8 w-full bg-white text-blue-700 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all">
+            <button class="mt-8 w-full bg-white text-blue-700 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all active:scale-95">
                 Support Ticket
             </button>
         </div>
     </div>
 </div>
+
+{{-- CSS UNTUK ANIMASI --}}
+<style>
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .animate-fade-in-up {
+        opacity: 0;
+        animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    
+    .animate-fade-in-right {
+        opacity: 0;
+        animation: fadeInRight 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Penyesuaian shadow dan transisi agar lebih smooth */
+    .transition-all { transition-duration: 400ms !important; }
+</style>
 @endsection

@@ -8,7 +8,8 @@
 <div class="space-y-8 pb-20 px-2 md:px-0" x-data="{ level: '10' }">
     
     {{-- Form Tambah Guru (Registrasi Card) --}}
-    <div class="bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden">
+    {{-- TAMBAHAN: animate-fade-in-up & delay 100ms --}}
+    <div class="bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden animate-fade-in-up" style="animation-delay: 100ms">
         <div class="bg-slate-900 px-10 py-6 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white">
@@ -59,7 +60,7 @@
                             @foreach(['10', '11', '12'] as $t)
                                 <button type="button" @click="level = '{{ $t }}'" 
                                     :class="level === '{{ $t }}' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'"
-                                    class="px-4 py-1.5 rounded-lg text-[9px] font-black transition-all uppercase">
+                                    class="px-4 py-1.5 rounded-lg text-[9px] font-black transition-all uppercase active:scale-90">
                                     Kelas {{ $t }}
                                 </button>
                             @endforeach
@@ -68,7 +69,6 @@
 
                     <div class="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 min-h-[250px]">
                         @php 
-                            // Logic Grouping: Mencari angka 10, 11, atau 12 di dalam string nama_kelas
                             $groupedKelas = $kelases->groupBy(function($item) {
                                 $name = strtoupper($item->nama_kelas);
                                 if (str_contains($name, '10') || str_contains($name, 'X ') || $name == 'X') return '10';
@@ -82,14 +82,15 @@
                             <div x-show="level === '{{ $lvl }}'" 
                                  x-transition:enter="transition ease-out duration-300" 
                                  x-transition:enter-start="opacity-0 transform scale-95" 
+                                 x-transition:enter-end="opacity-100 transform scale-100"
                                  class="grid grid-cols-2 md:grid-cols-5 gap-4">
                                 
                                 @if(isset($groupedKelas[$lvl]))
-                                    @foreach($groupedKelas[$lvl] as $kelas)
+                                    @foreach($groupedKelas[$lvl] as $indexK => $kelas)
                                         <label class="relative group cursor-pointer">
                                             <input type="checkbox" name="kelas[]" value="{{ $kelas->nama_kelas }}" class="peer hidden">
                                             
-                                            <div class="bg-white border-2 border-transparent peer-checked:border-blue-500 peer-checked:bg-blue-50/50 p-4 rounded-2xl transition-all hover:shadow-md text-center">
+                                            <div class="bg-white border-2 border-transparent peer-checked:border-blue-500 peer-checked:bg-blue-50/50 p-4 rounded-2xl transition-all hover:shadow-md text-center active:scale-95">
                                                 <span class="block text-[10px] font-black text-slate-700 uppercase">
                                                     {{ $kelas->nama_kelas }}
                                                 </span>
@@ -126,7 +127,8 @@
     </div>
 
     {{-- Tabel List Guru --}}
-    <div class="bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden">
+    {{-- TAMBAHAN: animate-fade-in-up & delay 300ms --}}
+    <div class="bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden animate-fade-in-up" style="animation-delay: 300ms">
         <div class="px-10 py-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
@@ -155,8 +157,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                    @forelse($gurus as $g)
-                    <tr class="group hover:bg-slate-50/50 transition-all duration-300">
+                    @forelse($gurus as $index => $g)
+                    {{-- TAMBAHAN: staggered delay untuk tiap baris data --}}
+                    <tr class="group hover:bg-slate-50/50 transition-all duration-300 animate-fade-in-right" style="animation-delay: {{ 400 + ($index * 50) }}ms">
                         <td class="px-10 py-6">
                             <span class="text-xs font-mono font-black text-slate-400 tracking-tighter group-hover:text-blue-600 transition-colors">#{{ $g->nip }}</span>
                         </td>
@@ -185,12 +188,12 @@
                         </td>
                         <td class="pr-12 pl-6 py-6">
                             <div class="flex justify-end items-center gap-2">
-                                <a href="#" class="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                <a href="#" class="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-90">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
                                 <form action="{{ route('admin.guru.destroy', $g->id) }}" method="POST" onsubmit="return confirm('Hapus data guru ini?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="p-2.5 rounded-xl bg-slate-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                                    <button type="submit" class="p-2.5 rounded-xl bg-slate-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm active:scale-90">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
@@ -226,18 +229,28 @@
     </div>
 </div>
 
+{{-- CSS UNTUK ANIMASI --}}
 <style>
-    /* Styling khusus agar pagination Laravel menyatu dengan tema */
-    .pagination-premium nav { @apply flex justify-center; }
-    .pagination-premium .pagination { @apply flex gap-2 border-none; }
-    .pagination-premium .page-item .page-link { 
-        @apply rounded-xl border-none bg-white text-[10px] font-black text-slate-500 px-4 py-2.5 shadow-sm hover:bg-blue-600 hover:text-white transition-all; 
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-    .pagination-premium .page-item.active .page-link { 
-        @apply bg-blue-600 text-white shadow-lg shadow-blue-100; 
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
     }
-    .pagination-premium .page-item.disabled .page-link { 
-        @apply opacity-50 bg-transparent shadow-none; 
+    
+    .animate-fade-in-up {
+        opacity: 0;
+        animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
+    
+    .animate-fade-in-right {
+        opacity: 0;
+        animation: fadeInRight 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    
+    /* Hover scale for inputs */
+    input:focus { transform: scale(1.01); }
 </style>
 @endsection

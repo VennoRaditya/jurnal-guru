@@ -37,6 +37,15 @@
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
         .no-scroll { overflow: hidden; }
+
+        /* EFEK KEDIP HALUS UNTUK TEKS PRO */
+        @keyframes pro-pulse {
+            0%, 100% { opacity: 1; text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+            50% { opacity: 0.7; text-shadow: 0 0 2px rgba(59, 130, 246, 0.2); }
+        }
+        .animate-pro {
+            animation: pro-pulse 2s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-[#f1f5f9] text-slate-900 overflow-x-hidden">
@@ -57,7 +66,7 @@
                     </div>
                     <div>
                         <h1 class="text-xl font-black tracking-tighter text-white italic">
-                            ADMIN<span class="text-blue-500">PRO</span>
+                            ADMIN<span class="text-blue-500 animate-pro">PRO</span>
                         </h1>
                         <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] leading-tight mt-1">
                             SMKN 43 JAKARTA
