@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link rel="icon" type="image/png" href="{{ asset('images/logo43.png') }}">
     <style>
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -38,13 +38,16 @@
 
         .no-scroll { overflow: hidden; }
 
-        /* EFEK KEDIP HALUS UNTUK TEKS PRO */
         @keyframes pro-pulse {
             0%, 100% { opacity: 1; text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
             50% { opacity: 0.7; text-shadow: 0 0 2px rgba(59, 130, 246, 0.2); }
         }
         .animate-pro {
             animation: pro-pulse 2s infinite ease-in-out;
+        }
+
+        .modal-transition {
+            transition: opacity 0.3s ease-out;
         }
     </style>
 </head>
@@ -54,13 +57,14 @@
 
     <div class="flex min-h-screen relative">
         
+        {{-- SIDEBAR --}}
         <aside id="adminSidebar" class="sidebar-transition fixed inset-y-0 left-0 z-40 w-80 bg-[#0f172a] text-white flex flex-col -translate-x-full lg:translate-x-0 lg:sticky shadow-[10px_0_40px_rgba(0,0,0,0.1)] h-screen">
             
             <div class="p-10">
                 <div class="flex items-center gap-4">
                     <div class="relative group">
                         <div class="absolute inset-0 bg-blue-500 rounded-2xl rotate-6 group-hover:rotate-0 transition-transform duration-300 opacity-20"></div>
-                        <img src="{{ asset('images/logo_smkn_43.jpg') }}" 
+                        <img src="{{ asset('images/logo43.png') }}" 
                              alt="Logo SMKN 43" 
                              class="w-12 h-12 rounded-2xl object-cover shadow-xl shadow-blue-900/40 relative z-10 border border-slate-700">
                     </div>
@@ -78,7 +82,6 @@
             <nav class="flex-1 px-4 space-y-1.5 overflow-y-auto">
                 <p class="px-6 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] mb-4">Core Management</p>
                 
-                {{-- Menu Dashboard --}}
                 <a href="{{ route('admin.dashboard') }}" 
                    class="group flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +90,6 @@
                     Dashboard Analytics
                 </a>
 
-                {{-- Menu Tenaga Pengajar --}}
                 <a href="{{ route('admin.guru.index') }}" 
                    class="group flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 {{ request()->routeIs('admin.guru.*') ? 'nav-link-active' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +98,6 @@
                     Tenaga Pengajar
                 </a>
 
-                {{-- Menu Ruang Kelas --}}
                 <a href="{{ route('admin.kelas.index') }}" 
                    class="group flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 {{ request()->routeIs('admin.kelas.*') ? 'nav-link-active' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,29 +107,26 @@
                 </a>
             </nav>
 
-            <div class="p-6">
+            <div class="p-6 mt-auto">
                 <div class="bg-slate-800/40 border border-slate-700/50 rounded-[2.5rem] p-6 text-center">
                     <div class="flex flex-col items-center mb-5">
-                        <div class="w-12 h-12 rounded-2xl bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-black text-sm shadow-lg mb-3 border border-white/10 text-white">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center font-black text-sm shadow-lg mb-3 border border-white/10 text-white">
                             {{ substr(auth()->user()->name, 0, 1) }}
                         </div>
                         <div class="overflow-hidden w-full">
                             <p class="text-[10px] font-black uppercase truncate tracking-wider text-white">{{ auth()->user()->name }}</p>
-                            <p class="text-[8px] font-bold text-blue-400 uppercase tracking-[0.2em] mt-1">System Overlord</p>
+                            <p class="text-[8px] font-bold text-blue-400 uppercase tracking-[0.2em] mt-1 italic">System Overlord</p>
                         </div>
                     </div>
-                    <form action="{{ route('admin.logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="w-full bg-rose-500/10 text-rose-400 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-300 active:scale-95 shadow-lg shadow-rose-900/10">
-                            Terminate Session
-                        </button>
-                    </form>
+                    <button type="button" onclick="openLogoutModal()" class="w-full bg-rose-500/10 text-rose-400 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all duration-300 active:scale-95">
+                        Terminate Session
+                    </button>
                 </div>
             </div>
         </aside>
 
+        {{-- MAIN CONTENT --}}
         <main class="flex-1 w-full flex flex-col min-w-0">
-            
             <header class="glass-header border-b border-slate-200/60 sticky top-0 z-20 px-8 py-5">
                 <div class="flex justify-between items-center max-w-7xl mx-auto w-full">
                     <div class="flex items-center gap-6">
@@ -168,10 +166,46 @@
         </main>
     </div>
 
+    {{-- MODAL LOGOUT (FIXED & IMPROVED) --}}
+    <div id="logoutModal" class="fixed inset-0 z-100]hidden items-center justify-center modal-transition opacity-0 p-4">
+        {{-- Backdrop --}}
+        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onclick="closeLogoutModal()"></div>
+        
+        {{-- Modal Content --}}
+        <div class="bg-white rounded-[2.5rem] p-10 shadow-2xl relative z-10 w-full max-w-sm transform scale-95 transition-all duration-300">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-20 h-20 rounded-4x1 bg-rose-50 flex items-center justify-center mb-6 rotate-3">
+                    <svg class="w-10 h-10 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                </div>
+                
+                <h3 class="text-2xl font-black text-slate-900 mb-2 italic tracking-tighter uppercase">Terminate?</h3>
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest leading-relaxed mb-10">
+                    Sesi Anda akan segera diakhiri dari sistem keamanan SMKN 43.
+                </p>
+                
+                <div class="flex flex-col gap-3 w-full">
+                    <form action="{{ route('admin.logout') }}" method="POST" class="w-full">
+                        @csrf
+                        <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-rose-600 transition-all duration-300 active:scale-95 shadow-xl shadow-slate-200">
+                            Confirm Termination
+                        </button>
+                    </form>
+                    <button onclick="closeLogoutModal()" class="w-full bg-slate-100 text-slate-400 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 hover:text-slate-600 transition-all active:scale-95">
+                        Stay Logged In
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const sidebar = document.getElementById('adminSidebar');
         const overlay = document.getElementById('adminOverlay');
         const body = document.body;
+        const logoutModal = document.getElementById('logoutModal');
+        const modalContent = logoutModal.querySelector('div:last-child');
 
         function toggleAdminSidebar() {
             const isClosed = sidebar.classList.contains('-translate-x-full');
@@ -192,9 +226,35 @@
         
         overlay.addEventListener('click', toggleAdminSidebar);
 
+        // --- IMPROVED MODAL LOGIC ---
+        function openLogoutModal() {
+            logoutModal.classList.remove('hidden');
+            logoutModal.classList.add('flex'); // Paksa flex agar center
+            
+            setTimeout(() => {
+                logoutModal.classList.add('opacity-100');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+            body.classList.add('no-scroll');
+        }
+
+        function closeLogoutModal() {
+            logoutModal.classList.remove('opacity-100');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                logoutModal.classList.remove('flex');
+                logoutModal.classList.add('hidden');
+                body.classList.remove('no-scroll');
+            }, 300);
+        }
+
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !sidebar.classList.contains('-translate-x-full')) {
-                toggleAdminSidebar();
+            if (e.key === 'Escape') {
+                if (!sidebar.classList.contains('-translate-x-full')) toggleAdminSidebar();
+                if (!logoutModal.classList.contains('hidden')) closeLogoutModal();
             }
         });
     </script>

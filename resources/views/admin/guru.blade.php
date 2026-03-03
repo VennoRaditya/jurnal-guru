@@ -5,54 +5,87 @@
 @section('header_subtitle', 'Manajemen akun dan data mata pelajaran guru.')
 
 @section('content')
-<div class="space-y-8 pb-20 px-2 md:px-0" x-data="{ level: '10' }">
+<div class="space-y-8 pb-20 px-2 md:px-0" 
+     x-data="{ 
+        level: '10',
+        isEdit: false,
+        guruForm: {
+            id: null,
+            nip: '',
+            nama: '',
+            mapel: '',
+            username: '',
+            kelas: []
+        },
+        openEdit(guru) {
+            this.isEdit = true;
+            this.guruForm = {
+                id: guru.id,
+                nip: guru.nip,
+                nama: guru.nama,
+                mapel: guru.mapel,
+                username: guru.username,
+                // Pastikan kelas dikonversi ke array
+                kelas: typeof guru.kelas === 'string' ? JSON.parse(guru.kelas) : guru.kelas
+            };
+            // Scroll ke form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        resetForm() {
+            this.isEdit = false;
+            this.guruForm = { id: null, nip: '', nama: '', mapel: '', username: '', kelas: [] };
+        }
+     }">
     
-    {{-- Form Tambah Guru (Registrasi Card) --}}
-    {{-- TAMBAHAN: animate-fade-in-up & delay 100ms --}}
+    {{-- Form Tambah/Edit Guru (Registrasi Card) --}}
     <div class="bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden animate-fade-in-up" style="animation-delay: 100ms">
         <div class="bg-slate-900 px-10 py-6 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
                 </div>
-                <h3 class="text-[10px] font-black text-white uppercase tracking-[0.3em]">Registrasi Guru Baru</h3>
+                <h3 class="text-[10px] font-black text-white uppercase tracking-[0.3em]" x-text="isEdit ? 'Edit Data Guru' : 'Registrasi Guru Baru'"></h3>
             </div>
             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">Admin Panel v.1.0</span>
         </div>
         
-        <form action="{{ route('admin.guru.store') }}" method="POST" class="p-10">
+        <form :action="isEdit ? `{{ url('admin/guru') }}/${guruForm.id}` : '{{ route('admin.guru.store') }}'" method="POST" class="p-10">
             @csrf
+            <template x-if="isEdit">
+                <input type="hidden" name="_method" value="PUT">
+            </template>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {{-- Baris 1: Identitas --}}
                 <div class="space-y-2">
                     <label class="text-[9px] font-black text-slate-400 uppercase ml-2">NIP</label>
-                    <input type="text" name="nip" placeholder="Contoh: 1988..." required 
+                    <input type="text" name="nip" x-model="guruForm.nip" placeholder="Contoh: 1988..." required 
                         class="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-6 py-4 text-xs font-bold focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
                 </div>
                 <div class="space-y-2">
                     <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Nama Lengkap & Gelar</label>
-                    <input type="text" name="nama" placeholder="Nama Guru..." required 
+                    <input type="text" name="nama" x-model="guruForm.nama" placeholder="Nama Guru..." required 
                         class="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-6 py-4 text-xs font-bold focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
                 </div>
                 <div class="space-y-2">
                     <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Bidang Studi (Mapel)</label>
-                    <input type="text" name="mapel" placeholder="Contoh: Matematika" required 
+                    <input type="text" name="mapel" x-model="guruForm.mapel" placeholder="Contoh: Matematika" required 
                         class="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-6 py-4 text-xs font-bold focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
                 </div>
 
                 {{-- Baris 2: Akun --}}
                 <div class="space-y-2">
                     <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Username Login</label>
-                    <input type="text" name="username" placeholder="guru_kece" required 
+                    <input type="text" name="username" x-model="guruForm.username" placeholder="guru_kece" required 
                         class="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-6 py-4 text-xs font-bold focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Password Akun</label>
-                    <input type="password" name="password" placeholder="********" required 
+                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Password Akun <span x-show="isEdit" class="text-rose-400">(Kosongkan jika tidak ubah)</span></label>
+                    <input type="password" name="password" placeholder="********" :required="!isEdit"
                         class="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-6 py-4 text-xs font-bold focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
                 </div>
 
-                {{-- Baris 3: Pemilihan Kelas (Dinamis dari DB) --}}
+                {{-- Baris 3: Pemilihan Kelas --}}
                 <div class="md:col-span-3 mt-4 space-y-4">
                     <div class="flex items-center justify-between px-2">
                         <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pilih Kelas yang Diajar</label>
@@ -86,9 +119,11 @@
                                  class="grid grid-cols-2 md:grid-cols-5 gap-4">
                                 
                                 @if(isset($groupedKelas[$lvl]))
-                                    @foreach($groupedKelas[$lvl] as $indexK => $kelas)
+                                    @foreach($groupedKelas[$lvl] as $kelas)
                                         <label class="relative group cursor-pointer">
-                                            <input type="checkbox" name="kelas[]" value="{{ $kelas->nama_kelas }}" class="peer hidden">
+                                            <input type="checkbox" name="kelas[]" value="{{ $kelas->nama_kelas }}" 
+                                                   x-model="guruForm.kelas"
+                                                   class="peer hidden">
                                             
                                             <div class="bg-white border-2 border-transparent peer-checked:border-blue-500 peer-checked:bg-blue-50/50 p-4 rounded-2xl transition-all hover:shadow-md text-center active:scale-95">
                                                 <span class="block text-[10px] font-black text-slate-700 uppercase">
@@ -118,16 +153,19 @@
                 </div>
             </div>
 
-            <div class="mt-10 flex justify-end">
-                <button type="submit" class="w-full md:w-72 bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-blue-100 active:scale-95">
-                    Simpan Guru & Akun
+            <div class="mt-10 flex justify-end gap-4">
+                <button type="button" @click="resetForm()" x-show="isEdit"
+                    class="w-full md:w-32 bg-slate-100 text-slate-600 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95">
+                    Batal
+                </button>
+                <button type="submit" class="w-full md:w-72 bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-blue-100 active:scale-95"
+                        x-text="isEdit ? 'Update Data Guru' : 'Simpan Guru & Akun'">
                 </button>
             </div>
         </form>
     </div>
 
     {{-- Tabel List Guru --}}
-    {{-- TAMBAHAN: animate-fade-in-up & delay 300ms --}}
     <div class="bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden animate-fade-in-up" style="animation-delay: 300ms">
         <div class="px-10 py-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-4">
@@ -158,7 +196,6 @@
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse($gurus as $index => $g)
-                    {{-- TAMBAHAN: staggered delay untuk tiap baris data --}}
                     <tr class="group hover:bg-slate-50/50 transition-all duration-300 animate-fade-in-right" style="animation-delay: {{ 400 + ($index * 50) }}ms">
                         <td class="px-10 py-6">
                             <span class="text-xs font-mono font-black text-slate-400 tracking-tighter group-hover:text-blue-600 transition-colors">#{{ $g->nip }}</span>
@@ -188,9 +225,10 @@
                         </td>
                         <td class="pr-12 pl-6 py-6">
                             <div class="flex justify-end items-center gap-2">
-                                <a href="#" class="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-90">
+                                <button type="button" @click="openEdit({{ $g }})" 
+                                   class="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-90">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                </a>
+                                </button>
                                 <form action="{{ route('admin.guru.destroy', $g->id) }}" method="POST" onsubmit="return confirm('Hapus data guru ini?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="p-2.5 rounded-xl bg-slate-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm active:scale-90">
@@ -229,7 +267,6 @@
     </div>
 </div>
 
-{{-- CSS UNTUK ANIMASI --}}
 <style>
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(30px); }
@@ -250,7 +287,6 @@
         animation: fadeInRight 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
     
-    /* Hover scale for inputs */
     input:focus { transform: scale(1.01); }
 </style>
 @endsection

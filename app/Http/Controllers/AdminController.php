@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use App\Models\Siswa;
+use App\Models\Kelas;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -44,9 +46,15 @@ class AdminController extends Controller
 
     public function dashboard() 
     {
+        // Mengambil log aktivitas terbaru untuk ditampilkan
+        $last_log = ActivityLog::latest()->first();
+
         return view('admin.dashboard', [
             'total_guru' => Guru::count(),
-            'total_siswa' => Siswa::count()
+            'total_siswa' => Siswa::count(),
+            'total_kelas' => Kelas::count(),
+            'recent_teachers' => Guru::latest()->take(3)->get(),
+            'last_log' => $last_log, 
         ]);
     }
 
@@ -77,12 +85,25 @@ class AdminController extends Controller
             'kelas' => $request->tingkat_temp . ' ' . $request->jurusan_temp
         ]);
 
+        // Tambahkan log aktivitas
+        ActivityLog::create([
+            'description' => 'Siswa baru ditambahkan: ' . $request->nama
+        ]);
+
         return back()->with('success', 'Data murid berhasil ditambahkan.');
     }
 
     public function siswaDestroy($id) 
     {
-        Siswa::destroy($id);
+        $siswa = Siswa::findOrFail($id);
+        $namaSiswa = $siswa->nama;
+        $siswa->delete();
+
+        // Tambahkan log aktivitas
+        ActivityLog::create([
+            'description' => 'Data siswa dihapus: ' . $namaSiswa
+        ]);
+
         return back()->with('success', 'Data murid berhasil dihapus.');
     }
 
@@ -90,7 +111,6 @@ class AdminController extends Controller
 
     public function guruIndex() 
     {
-        // Mengambil data guru terbaru dengan pagination
         $gurus = Guru::latest()->paginate(10);
         return view('admin.guru', compact('gurus'));
     }
@@ -103,7 +123,6 @@ class AdminController extends Controller
             'mapel' => 'required',
         ]);
 
-        // Logika Generate Email Otomatis: nama.guru@sekolah.sch.id
         $cleanName = strtolower(str_replace(' ', '.', $request->nama));
         $generatedEmail = $cleanName . '@sekolah.sch.id';
 
@@ -112,16 +131,51 @@ class AdminController extends Controller
             'nama'     => $request->nama,
             'mapel'    => $request->mapel,
             'email'    => $generatedEmail,
-            'password' => Hash::make($request->nip), // Password default adalah NIP
+            'password' => Hash::make($request->nip),
+        ]);
+
+        // Tambahkan log aktivitas
+        ActivityLog::create([
+            'description' => 'Guru baru ditambahkan: ' . $request->nama
         ]);
 
         return back()->with('success', 'Data guru ' . $request->nama . ' berhasil ditambahkan.');
     }
 
+    public function guruUpdate(Request $request, $id)
+    {
+        $guru = Guru::findOrFail($id);
+
+        $request->validate([
+            'nip'   => 'required|unique:gurus,nip,' . $guru->id,
+            'nama'  => 'required',
+            'mapel' => 'required',
+        ]);
+
+        $guru->update([
+            'nip'   => $request->nip,
+            'nama'  => $request->nama,
+            'mapel' => $request->mapel,
+        ]);
+
+        // Tambahkan log aktivitas
+        ActivityLog::create([
+            'description' => 'Data guru diubah: ' . $request->nama
+        ]);
+
+        return redirect()->route('admin.guru.index')->with('success', 'Data guru berhasil diperbarui.');
+    }
+
     public function guruDestroy($id)
     {
         $guru = Guru::findOrFail($id);
+        $namaGuru = $guru->nama;
         $guru->delete();
+
+        // Tambahkan log aktivitas
+        ActivityLog::create([
+            'description' => 'Data guru dihapus: ' . $namaGuru
+        ]);
 
         return back()->with('success', 'Data guru berhasil dihapus dari sistem.');
     }

@@ -15,7 +15,7 @@ class AdminSeeder extends Seeder
             ['email' => 'admin@sekolah.sch.id'], // Kolom unik sebagai kunci pencarian
             [
                 'name' => 'Administrator',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make('@Sekolah969'),
             ]
         );
     }

@@ -29,7 +29,7 @@ class SiswaController extends Controller
 
         Siswa::create([
             'nis'      => $request->nis,
-            'nama'     => strtoupper($request->nama),
+            'nama'     => strtoupper($request->nama), // Konsisten huruf kapital
             'jk'       => $request->jk,
             'kelas_id' => $request->kelas_id,
         ]);
@@ -37,6 +37,31 @@ class SiswaController extends Controller
         // Kirim flash message dan instruksi ke Alpine untuk buka kembali kelas ini
         return back()->with([
             'success' => 'Siswa berhasil ditambahkan.',
+            'last_kelas_id' => $request->kelas_id
+        ]);
+    }
+
+    // 1. TAMBAHKAN FUNGSI UPDATE AGAR KONSISTEN
+    public function update(Request $request, $id)
+    {
+        $siswa = Siswa::findOrFail($id);
+
+        $request->validate([
+            'nis'      => 'required|unique:siswas,nis,' . $siswa->id, // Kecualikan diri sendiri
+            'nama'     => 'required|string|max:255',
+            'jk'       => 'required|in:L,P',
+            'kelas_id' => 'required|exists:kelas,id',
+        ]);
+
+        $siswa->update([
+            'nis'      => $request->nis,
+            'nama'     => strtoupper($request->nama), // Konsisten huruf kapital
+            'jk'       => $request->jk,
+            'kelas_id' => $request->kelas_id,
+        ]);
+
+        return back()->with([
+            'success' => 'Siswa berhasil diperbarui.',
             'last_kelas_id' => $request->kelas_id
         ]);
     }
@@ -53,10 +78,14 @@ class SiswaController extends Controller
             
             return back()->with([
                 'success' => 'Data berhasil di-import!',
-                'last_kelas_id' => $request->kelas_id // Simpan ID agar otomatis terbuka
+                'last_kelas_id' => $request->kelas_id
             ]);
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal: ' . $e->getMessage());
+            // 2. LOG ERROR AGAR ADMIN TAHU PENYEBABNYA
+            Log::error('Import error: ' . $e->getMessage());
+            
+            // 3. PESAN ERROR YANG LEBIH RAMAH PENGGUNA
+            return back()->with('error', 'Gagal mengimpor data. Periksa kembali format file Excel Anda.');
         }
     }
 

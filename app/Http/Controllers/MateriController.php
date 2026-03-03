@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Materi;
+use App\Models\Absensi; // 1. IMPORT MODEL ABSENSI
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB; // 2. IMPORT DB FACADE
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
@@ -13,7 +15,7 @@ class MateriController extends Controller
     /**
      * Menampilkan Arsip Materi Pembelajaran (Riwayat dengan Filter Bulanan)
      */
-    public function index(Request $request) // Tambahkan parameter Request
+    public function index(Request $request)
     {
         $guru_id = Auth::guard('guru')->id();
 
@@ -24,7 +26,6 @@ class MateriController extends Controller
         $date = Carbon::parse($periode);
 
         // 3. Query dengan filter Tahun dan Bulan yang spesifik
-        // Gunakan with('absensi') sesuai relasi di model Anda
         $riwayatMateri = Materi::with('absensi') 
             ->where('guru_id', $guru_id)
             ->whereYear('tanggal', $date->year)
@@ -33,7 +34,16 @@ class MateriController extends Controller
             ->paginate(10)
             ->withQueryString(); // Menjaga parameter URL saat pindah halaman pagination
 
-        return view('guru.materi.index', compact('riwayatMateri'));
+        return view('guru.materi.index', compact('riwayatMateri', 'periode'));
+    }
+
+    /**
+     * TAMPILAN: Form Input Materi Baru
+     */
+    public function create()
+    {
+        // Pastikan view 'guru.materi.create' ada
+        return view('guru.materi.create');
     }
 
     /**
@@ -89,35 +99,21 @@ class MateriController extends Controller
      */
     public function destroy($id)
     {
-        $materi = Materi::where('guru_id', Auth::guard('guru')->id())->findOrFail($id);
-        $materi->delete();
+        // Gunakan Transaksi agar jika gagal menghapus absensi, materi tidak jadi dihapus
+        try {
+            DB::transaction(function () use ($id) {
+                $materi = Materi::where('guru_id', Auth::guard('guru')->id())->findOrFail($id);
+                
+                // 3. Hapus absensi yang terkait terlebih dahulu
+                Absensi::where('materi_id', $materi->id)->delete();
+                
+                // 4. Hapus materinya
+                $materi->delete();
+            });
 
-        return redirect()->back()->with('success', 'Jurnal berhasil dihapus!');
-    }
-
-    /**
-     * Simpan Materi Baru
-     */
-    public function store(Request $request) 
-    {
-        $request->validate([
-            'materi_kd' => 'required|string|max:255',
-            'kegiatan_pembelajaran' => 'required',
-            'evaluasi' => 'required',
-            'kelas' => 'required',
-            'tanggal' => 'required|date'
-        ]);
-
-        Materi::create([
-            'guru_id'               => Auth::guard('guru')->id(),
-            'mata_pelajaran'        => Auth::guard('guru')->user()->mapel, 
-            'materi_kd'             => $request->materi_kd,
-            'kegiatan_pembelajaran' => $request->kegiatan_pembelajaran,
-            'evaluasi'              => $request->evaluasi,
-            'kelas'                 => $request->kelas,
-            'tanggal'               => $request->tanggal
-        ]);
-
-        return redirect()->back()->with('success', 'Jurnal berhasil ditambahkan!');
+            return redirect()->back()->with('success', 'Jurnal dan data absensi terkait berhasil dihapus!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus jurnal: ' . $e->getMessage());
+        }
     }
 }

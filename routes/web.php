@@ -25,7 +25,7 @@ Route::get('/login', function() {
 })->name('login');
 
 // ==========================================
-//                PANEL ADMIN
+//                 PANEL ADMIN
 // ==========================================
 Route::prefix('admin')->group(function () {
     Route::middleware('guest')->group(function () {
@@ -37,9 +37,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
         // GURU MANAGE
-        Route::prefix('guru-manage')->name('admin.guru.')->group(function () {
+        Route::prefix('guru')->name('admin.guru.')->group(function () {
             Route::get('/', [GuruAuthController::class, 'index'])->name('index');
-            Route::post('/store', [GuruAuthController::class, 'store'])->name('store');
+            Route::post('/', [GuruAuthController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [GuruAuthController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [GuruAuthController::class, 'update'])->name('update');
             Route::delete('/{id}', [GuruAuthController::class, 'destroy'])->name('destroy');
         });
 
@@ -47,8 +49,9 @@ Route::prefix('admin')->group(function () {
         Route::prefix('kelas-manage')->name('admin.kelas.')->group(function () {
             Route::get('/', [KelasController::class, 'index'])->name('index');
             Route::post('/store', [KelasController::class, 'store'])->name('store');
-            Route::delete('/{id}', [KelasController::class, 'destroy'])->name('destroy');
-            Route::get('/{id}/siswa', [SiswaController::class, 'getSiswaByKelas'])->name('getSiswa');
+            Route::delete('/{kelas}', [KelasController::class, 'destroy'])->name('destroy');
+            Route::delete('/{id}/clear', [KelasController::class, 'clearSiswa'])->name('clear-siswa');
+            Route::get('/{id}/siswa', [KelasController::class, 'getSiswa'])->name('getSiswa');
         });
 
         // SISWA MANAGE
@@ -65,7 +68,7 @@ Route::prefix('admin')->group(function () {
 });
 
 // ==========================================
-//                PANEL GURU
+//                 PANEL GURU
 // ==========================================
 Route::prefix('guru')->group(function () {
     Route::middleware('guest:guru')->group(function () {
@@ -76,16 +79,15 @@ Route::prefix('guru')->group(function () {
     Route::middleware('auth:guru')->group(function () {
         Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('guru.dashboard');
 
-        // --- DAFTAR KETIDAKHADIRAN SISWA ---
-        // URL akses: 127.0.0.1:8000/guru/siswa/absensi
-        Route::prefix('siswa')->group(function() {
-            Route::get('/absensi', [AbsensiController::class, 'rekapHarian'])->name('guru.absensi.rekap');
+        // --- ABSENSI & SISWA ---
+        Route::prefix('siswa')->name('guru.absensi.')->group(function() {
+            Route::get('/absensi', [AbsensiController::class, 'rekapHarian'])->name('rekap');
+            Route::put('/absensi/rekap/update/{id}', [AbsensiController::class, 'updateAbsensi'])->name('update');
+            Route::get('/cetak-harian', [AbsensiController::class, 'cetakHarian'])->name('cetakHarian');
+            Route::get('/cetak-pdf', [AbsensiController::class, 'cetakPdf'])->name('cetakPdf');
             
-            // CETAK PDF KHUSUS HARIAN (Mengarahkan ke pdf.blade.php melalui cetakHarian)
-            Route::get('/cetak-harian', [AbsensiController::class, 'cetakHarian'])->name('guru.absensi.cetakHarian');
-            
-            // CETAK PDF REKAP JURNAL/BULANAN (Mengarahkan ke rekap_pdf.blade.php melalui cetakPdf)
-            Route::get('/cetak-pdf', [AbsensiController::class, 'cetakPdf'])->name('guru.absensi.cetakPdf');
+            // Fix error: guru.absensi.select
+            Route::get('/pilih-kelas', [AbsensiController::class, 'selectClass'])->name('select');
         });
 
         // --- PRESENSI & JURNAL INPUT ---
@@ -95,11 +97,16 @@ Route::prefix('guru')->group(function () {
             Route::post('/store', [AbsensiController::class, 'storeJurnal'])->name('storeJurnal');
         });
 
-        // --- REKAP & MATERI MANAGE ---
-        Route::get('/rekap-mingguan/download', [MateriController::class, 'downloadRekap'])->name('guru.rekap.download');
+        // --- RIWAYAT & MANAJEMEN MATERI ---
         Route::get('/riwayat-materi', [MateriController::class, 'index'])->name('guru.materi.index');
+        Route::get('/rekap-mingguan/download', [MateriController::class, 'downloadRekap'])->name('guru.rekap.download');
         
         Route::prefix('materi-manage')->name('guru.materi.')->group(function () {
+            // Sesuai tombol "Input Jurnal Baru" dan "Cetak PDF" di dashboard
+            Route::get('/create', [AbsensiController::class, 'selectClass'])->name('create');
+            Route::get('/cetak', [AbsensiController::class, 'cetakPdf'])->name('cetak');
+            
+            Route::get('/{id}', [MateriController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [MateriController::class, 'edit'])->name('edit'); 
             Route::put('/{id}', [MateriController::class, 'update'])->name('update'); 
             Route::delete('/{id}', [MateriController::class, 'destroy'])->name('destroy'); 

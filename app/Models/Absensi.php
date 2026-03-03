@@ -24,8 +24,8 @@ class Absensi extends Model
     ];
 
     /**
-     * Mutator & Accessor (Terbaru di Laravel)
-     * Memastikan status yang masuk ke DB selalu rapi (contoh: 'hadir' jadi 'Hadir')
+     * Mutator (Set)
+     * Memastikan status yang masuk ke DB selalu kapital di awal (contoh: 'hadir' jadi 'Hadir')
      * Ini kunci agar hitungan statistik di riwayat tidak error.
      */
     protected function status(): Attribute
@@ -51,8 +51,10 @@ class Absensi extends Model
      */
     public function siswa()
     {
+        // 1. Peningkatan: Tambahkan handling jika relasi siswa tidak ditemukan
         return $this->belongsTo(Siswa::class, 'siswa_id')->withDefault([
-            'nama' => 'Siswa Tidak Ditemukan'
+            'nama' => 'Siswa Terhapus',
+            'nis' => '-'
         ]);
     }
 
@@ -61,6 +63,7 @@ class Absensi extends Model
      */
     public function scopeStatus($query, $status)
     {
+        // 2. Peningkatan: Pastikan pencarian juga konsisten (kapital di awal)
         return $query->where('status', ucfirst(strtolower($status)));
     }
 }

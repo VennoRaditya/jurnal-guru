@@ -3,170 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin System | Secure Authorization</title>
+    <title>Admin Portal | Secure Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #020617;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(30, 64, 175, 0.2) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(76, 29, 149, 0.2) 0px, transparent 50%);
-            /* Diubah agar bisa scroll */
-            min-height: 100vh;
-            overflow-y: auto;
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #ededed;
         }
 
-        /* Sembunyikan scrollbar agar tetap estetik (opsional) */
-        body::-webkit-scrollbar {
-            width: 5px;
-        }
-        body::-webkit-scrollbar-thumb {
-            background: rgba(59, 130, 246, 0.2);
-            border-radius: 10px;
-        }
-
-        .bg-grid {
-            position: fixed; /* Fixed agar grid tidak ikut tergulung habis */
-            inset: 0;
-            background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 40px 40px;
-            mask-image: radial-gradient(circle at center, black, transparent 80%);
+        .mesh-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 50% -20%, #1e293b 0%, transparent 50%),
+                radial-gradient(circle at 0% 100%, #0f172a 0%, transparent 50%);
             z-index: -1;
         }
 
-        .admin-card {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-            position: relative;
-            z-index: 10;
+        .auth-card {
+            background: rgba(18, 18, 18, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .admin-card::after {
-            content: "";
-            position: absolute;
-            top: -100%;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.05), transparent);
-            animation: scan 4s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes scan {
-            0% { top: -100%; }
-            100% { top: 100%; }
-        }
-
-        .input-dark {
-            background: rgba(0, 0, 0, 0.3);
+        .input-field {
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f8fafc;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
-        .input-dark:focus {
+        .input-field:focus {
             border-color: #3b82f6;
-            background: rgba(0, 0, 0, 0.5);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
-        .btn-execute {
-            background: white;
-            color: black;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .btn-primary {
+            background: #ffffff;
+            color: #000000;
+            transition: all 0.2s ease;
         }
 
-        .btn-execute:hover {
-            background: #3b82f6;
-            color: white;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
-            transform: scale(1.02);
+        .btn-primary:hover {
+            background: #e2e2e2;
+            transform: translateY(-1px);
         }
 
-        .fade-in-blur {
-            animation: fadeInBlur 1s ease-out forwards;
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
-        @keyframes fadeInBlur {
-            from { opacity: 0; filter: blur(10px); transform: scale(0.95); }
-            to { opacity: 1; filter: blur(0); transform: scale(1); }
+        /* Subtle Fade In */
+        .animate-subtle {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-6">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="bg-grid"></div>
+    <div class="mesh-gradient"></div>
 
-    <div class="py-12 w-full flex justify-center">
-        <div class="admin-card p-10 md:p-14 rounded-4x1 w-full max-w-md fade-in-blur overflow-hidden border-t-4 border-blue-600">
-            
-            <div class="flex flex-col items-center mb-10">
-                <div class="relative mb-6">
-                    <div class="absolute inset-0 bg-blue-500 rounded-full blur-2xl opacity-20 animate-pulse"></div>
-                    <div class="relative w-16 h-16 bg-blue-600/10 border border-blue-500/30 rounded-2xl flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                    </div>
-                </div>
-                <h2 class="text-2xl font-black text-white tracking-[0.2em] uppercase text-center">Security Core</h2>
-                <div class="flex items-center gap-2 mt-2 justify-center">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
-                    <p class="text-emerald-500 text-[10px] font-black uppercase tracking-widest">System Online</p>
-                </div>
+    <div class="w-full max-w-[400px] animate-subtle">
+        {{-- Branding Area --}}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-4">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
             </div>
+            <h1 class="text-xl font-semibold tracking-tight">Admin Authentication</h1>
+            <p class="text-sm text-zinc-500 mt-1">Please enter your credentials to continue.</p>
+        </div>
 
+        {{-- Main Card --}}
+        <div class="auth-card rounded-2xl p-8">
+            
             @if(session('error'))
-                <div class="mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-3">
-                    <svg class="w-4 h-4 text-rose-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <div class="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3">
+                    <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                     </svg>
-                    <p class="text-[10px] font-bold text-rose-500 uppercase tracking-wider">{{ session('error') }}</p>
+                    <p class="text-xs font-medium text-red-400">{{ session('error') }}</p>
                 </div>
             @endif
 
-            <form action="{{ route('admin.login.submit') }}" method="POST" class="space-y-6">
+            <form action="{{ route('admin.login.submit') }}" method="POST" class="space-y-5">
                 @csrf
                 
-                <div class="space-y-2">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] ml-1">Terminal ID</label>
-                    <input type="email" name="email" placeholder="admin@root.sys" required 
-                        class="input-dark w-full rounded-xl px-6 py-4 text-xs font-bold outline-none">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-2">Email Address</label>
+                    <input type="email" name="email" placeholder="name@company.com" required 
+                        class="input-field w-full rounded-lg px-4 py-3 text-sm">
                 </div>
                 
-                <div class="space-y-2">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] ml-1">Access Key</label>
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-medium text-zinc-400">Password</label>
+                    </div>
                     <input type="password" name="password" placeholder="••••••••" required 
-                        class="input-dark w-full rounded-xl px-6 py-4 text-xs font-bold outline-none">
+                        class="input-field w-full rounded-lg px-4 py-3 text-sm">
                 </div>
 
-                <div class="pt-4">
-                    <button type="submit" class="btn-execute w-full py-5 rounded-xl text-[11px] font-black uppercase tracking-[0.3em] active:scale-95 shadow-lg">
-                        Initialize Auth
-                    </button>
-                </div>
-                
-                <div class="pt-8 border-t border-slate-800/50 mt-4">
-                    <a href="{{ route('login') }}" class="group flex items-center justify-center gap-3 text-[10px] font-black text-slate-500 hover:text-white uppercase tracking-[0.2em] transition-all duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Back to Personnel Portal
-                    </a>
-                </div>
+                <button type="submit" class="btn-primary w-full py-3 rounded-lg text-sm font-semibold mt-2">
+                    Sign In to Dashboard
+                </button>
             </form>
-        </div>
-    </div>
 
-    <div class="w-full flex justify-between px-12 pb-8 pointer-events-none opacity-20 mt-auto">
-        <div class="text-[10px] font-mono text-blue-500 uppercase tracking-[0.5em]">Auth_Protocol: V.2.0.4</div>
-        <div class="text-[10px] font-mono text-blue-500 uppercase tracking-[0.5em]">Sector_43: Active</div>
+            <div class="mt-8 pt-6 border-t border-white/5 text-center">
+                <a href="{{ route('login') }}" class="text-xs text-zinc-500 hover:text-white transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Return to Staff Portal
+                </a>
+            </div>
+        </div>
+
+        {{-- Footer Info --}}
+        <div class="mt-8 text-center flex items-center justify-center gap-4 opacity-30">
+            <span class="text-[10px] font-medium tracking-widest uppercase">Encrypted Session</span>
+            <span class="w-1 h-1 bg-zinc-500 rounded-full"></span>
+            <span class="text-[10px] font-medium tracking-widest uppercase">System v2.4</span>
+        </div>
     </div>
 
 </body>

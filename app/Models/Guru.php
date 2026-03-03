@@ -18,7 +18,7 @@ class Guru extends Authenticatable
         'username',
         'password',
         'mapel',
-        'kelas',
+        'kelas', // Tipe array
         'email',
     ];
 
@@ -29,7 +29,18 @@ class Guru extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed', // Otomatis meng-hash password saat disimpan
-        'kelas' => 'array',    // Otomatis convert Array <=> JSON
+        'password' => 'hashed',
+        'kelas' => 'array',
     ];
+
+    /**
+     * --- TAMBAHKAN RELASI INI ---
+     * Relasi: Satu guru memiliki banyak kelas yang diampu.
+     * Digunakan oleh Controller untuk menghitung $total_kelas.
+     */
+    public function daftarKelas()
+    {
+        // Asumsi: Tabel 'kelas' memiliki kolom 'guru_id'
+        return $this->hasMany(Kelas::class, 'guru_id');
+    }
 }

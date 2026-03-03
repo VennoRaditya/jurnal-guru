@@ -20,14 +20,13 @@ class GuruAuthController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi sesuai name="nip", name="username", dll di Blade
         $request->validate([
             'nip'      => 'required|unique:gurus,nip',
             'nama'     => 'required|string|max:255',
             'mapel'    => 'required|string',
             'username' => 'required|unique:gurus,username',
             'password' => 'required|min:6',
-            'kelas'    => 'nullable|array' // Untuk menangani checkbox kelas[]
+            'kelas'    => 'nullable|array' 
         ], [
             'nip.unique'      => 'NIP sudah terdaftar di sistem.',
             'username.unique' => 'Username sudah digunakan guru lain.',
@@ -35,14 +34,13 @@ class GuruAuthController extends Controller
         ]);
 
         try {
-            // 2. Simpan ke database
             Guru::create([
                 'nip'      => $request->nip,
                 'nama'     => $request->nama,
                 'mapel'    => $request->mapel,
                 'username' => $request->username,
                 'password' => Hash::make($request->password),
-                'kelas'    => $request->kelas, // Akan otomatis jadi JSON jika model dikonfigurasi
+                'kelas'    => $request->kelas, // Laravel akan otomatis mengubah array ke JSON jika dikonfigurasi di Model
             ]);
 
             return back()->with('success', 'Akun Guru & Kelas Ampuan berhasil disimpan!');
@@ -50,6 +48,49 @@ class GuruAuthController extends Controller
             return back()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
         }
     }
+
+    // --- TAMBAHAN: FITUR EDIT ---
+    public function edit($id)
+    {
+        $guru = Guru::findOrFail($id);
+        $kelases = Kelas::all();
+        
+        // Mengirim data guru, semua kelas, dan kelas yang sudah diampu (untuk checked di view)
+        return view('admin.guru_edit', compact('guru', 'kelases'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $guru = Guru::findOrFail($id);
+
+        $request->validate([
+            'nip'      => 'required|unique:gurus,nip,' . $guru->id, // Kecualikan diri sendiri
+            'nama'     => 'required|string|max:255',
+            'mapel'    => 'required|string',
+            'username' => 'required|unique:gurus,username,' . $guru->id,
+            'password' => 'nullable|min:6', // Password opsional saat edit
+            'kelas'    => 'nullable|array'
+        ]);
+
+        try {
+            $data = $request->except(['password', 'kelas']);
+
+            // Update password jika diisi
+            if ($request->filled('password')) {
+                $data['password'] = Hash::make($request->password);
+            }
+
+            // Update kelas
+            $data['kelas'] = $request->kelas ?? [];
+
+            $guru->update($data);
+
+            return redirect()->route('admin.guru.index')->with('success', 'Data guru berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui: ' . $e->getMessage());
+        }
+    }
+    // ----------------------------
 
     public function destroy($id)
     {
@@ -69,7 +110,7 @@ class GuruAuthController extends Controller
 
     public function login(Request $request) {
         $credentials = $request->validate([
-            'username' => 'required', // Ganti email ke username
+            'username' => 'required',
             'password' => 'required',
         ]);
 

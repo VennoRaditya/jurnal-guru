@@ -13,12 +13,11 @@ class Siswa extends Model
         'nis',
         'nama',
         'jk',
-        'kelas_id', // Ini yang paling penting untuk relasi
+        'kelas_id',
     ];
 
     /**
      * Relasi ke model Kelas
-     * Pastikan di tabel 'siswas' ada kolom 'kelas_id'
      */
     public function kelas()
     {
@@ -26,7 +25,16 @@ class Siswa extends Model
     }
 
     /**
-     * Optional: Accessor agar nama selalu rapi (Caps Lock)
+     * PENTING: Relasi ke model Absensi
+     * Tanpa ini, fitur hitung rekap S/I/A di Controller/PDF akan error.
+     */
+    public function absensis()
+    {
+        return $this->hasMany(Absensi::class, 'siswa_id');
+    }
+
+    /**
+     * Mutator: Memastikan nama yang masuk ke database selalu Huruf Kapital
      */
     public function setNamaAttribute($value)
     {

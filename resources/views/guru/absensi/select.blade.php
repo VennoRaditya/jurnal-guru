@@ -5,102 +5,95 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto px-0 md:px-4 pb-20">
-    <div class="bg-white md:rounded-[3rem] rounded-t-[2.5rem] border-x border-t md:border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.03)] overflow-hidden">
+    <div class="bg-white md:rounded-[3rem] rounded-t-[2.5rem] border border-slate-100 shadow-[0_15px_35px_rgba(0,0,0,0.02)] overflow-hidden">
         
-        {{-- Header Card - Dibuat lebih ringkas di mobile --}}
-        <div class="bg-linear-to-r from-indigo-600 to-blue-700 p-6 md:p-12 text-white relative">
-            <div class="relative z-10 flex items-center gap-4 md:gap-6">
-                <div class="w-12 h-12 md:w-16 md:h-16 bg-white/20 backdrop-blur-xl rounded-2xl md:rounded-3xl flex items-center justify-center border border-white/30 shadow-xl">
-                    <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        {{-- Header Card --}}
+        <div class="bg-slate-900 p-8 md:p-12 text-white relative overflow-hidden">
+            <div class="relative z-10 flex items-center gap-5 md:gap-6">
+                <div class="w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-3xl md:rounded-4x1 flex items-center justify-center border border-white/10">
+                    <svg class="w-8 h-8 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-lg md:text-2xl font-black uppercase tracking-tight">Pilih Kelas</h3>
-                    <p class="text-indigo-100 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-0.5 opacity-80">
-                        {{ count($kelasDiampu ?? []) }} Kelas Terdaftar
+                    <h3 class="text-2xl md:text-4xl font-black uppercase tracking-tighter">Pilih Kelas</h3>
+                    <p class="text-slate-300 text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] mt-1">
+                        {{ count($kelasDiampu ?? []) }} Kelas Tersedia
                     </p>
                 </div>
             </div>
-            {{-- Dekorasi Abstract --}}
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+            {{-- Dekorasi Minimalis --}}
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl"></div>
         </div>
 
-        <div class="p-6 md:p-12">
+        <div class="p-6 md:p-10">
             <form action="{{ route('guru.presensi.create') }}" method="GET" class="space-y-8 md:space-y-10">
                 
-                <div class="space-y-6">
-                    <div class="flex items-center justify-between">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Daftar Kelas Ampuan</label>
-                        <div class="h-px flex-1 bg-slate-100 ml-4"></div>
-                    </div>
-
-                    {{-- Grid Kelas: 2 kolom di mobile agar hemat ruang --}}
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                        @forelse($kelasDiampu ?? [] as $kelas)
-                        <label class="relative cursor-pointer group">
-                            <input type="radio" name="kelas" value="{{ trim($kelas) }}" required class="peer hidden">
+                {{-- Grid Kelas --}}
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                    @forelse($kelasDiampu ?? [] as $kelas)
+                    <label class="relative cursor-pointer group block">
+                        <input type="radio" name="kelas" value="{{ trim($kelas) }}" required class="peer hidden">
+                        
+                        {{-- Card Kelas --}}
+                        <div class="h-full p-6 md:p-8 text-center rounded-4x1 md:rounded-[2.5rem] border-2 border-slate-100 bg-white transition-all duration-300 
+                            peer-checked:border-blue-600 peer-checked:bg-blue-50/50 peer-checked:shadow-lg peer-checked:shadow-blue-500/10
+                            hover:border-slate-300 hover:shadow-md">
                             
-                            {{-- Card Kelas --}}
-                            <div class="p-4 md:p-6 text-center rounded-4x1 border-2 border-slate-50 bg-slate-50 transition-all duration-300 
-                                peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-600 
-                                active:scale-95 md:group-hover:bg-white md:group-hover:shadow-xl md:group-hover:-translate-y-1">
-                                
-                                {{-- Icon Check --}}
-                                <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm 
-                                    peer-checked:bg-indigo-600 peer-checked:text-white transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                </div>
-                                
-                                <p class="text-[11px] md:text-sm font-black uppercase tracking-tight truncate">{{ $kelas }}</p>
+                            {{-- Icon Indicator --}}
+                            <div class="w-14 h-14 md:w-16 md:h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-5 border border-slate-200 transition-all duration-300
+                                peer-checked:bg-blue-600 peer-checked:border-blue-700 peer-checked:shadow-inner group-hover:scale-105">
+                                <span class="text-slate-500 font-black text-2xl peer-checked:text-white transition-colors">
+                                    {{ substr(trim($kelas), 0, 1) }}
+                                </span>
                             </div>
-                        </label>
-                        @empty
-                        <div class="col-span-full p-8 md:p-12 bg-rose-50/50 rounded-[2.5rem] text-center border-2 border-dashed border-rose-100">
-                             <p class="text-rose-600 text-[10px] font-black uppercase tracking-widest leading-loose">
-                                Belum ada kelas yang ditugaskan.<br>Silahkan hubungi Admin Kurikulum.
-                             </p>
+                            
+                            <p class="text-sm md:text-base font-black text-slate-900 uppercase tracking-tight leading-tight peer-checked:text-blue-700">
+                                {{ $kelas }}
+                            </p>
                         </div>
-                        @endforelse
+                    </label>
+                    @empty
+                    <div class="col-span-full p-10 md:p-12 bg-amber-50 rounded-4x1 text-center border-2 border-dashed border-amber-200">
+                         <div class="w-16 h-16 bg-amber-100 rounded-3xl flex items-center justify-center mx-auto mb-6 text-amber-600">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                         </div>
+                         <p class="text-amber-800 text-xs font-black uppercase tracking-[0.15em]">
+                            Belum ada kelas yang ditugaskan.<br>
+                            <span class="font-bold opacity-70">Silahkan hubungi Admin Kurikulum.</span>
+                         </p>
                     </div>
+                    @endforelse
                 </div>
 
-                <div class="pt-6 border-t border-slate-50">
-                    {{-- Button Utama --}}
+                {{-- Footer Action --}}
+                <div class="pt-6 border-t border-slate-100">
                     <button type="submit" @empty($kelasDiampu) disabled @endempty 
-                        class="group relative w-full overflow-hidden {{ empty($kelasDiampu) ? 'bg-slate-200 cursor-not-allowed' : 'bg-slate-900' }} 
-                        text-white py-5 md:py-6 rounded-2xl md:rounded-4xl text-[11px] md:text-xs font-black uppercase tracking-[0.2em] 
-                        transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-500/20 active:scale-[0.98]">
+                        class="group relative w-full overflow-hidden {{ empty($kelasDiampu) ? 'bg-slate-200 cursor-not-allowed text-slate-400' : 'bg-slate-900 text-white' }} 
+                        py-5 md:py-6 rounded-2xl md:rounded-3xl text-xs md:text-sm font-black uppercase tracking-[0.2em] 
+                        transition-all duration-300 hover:shadow-xl hover:shadow-slate-900/10 active:scale-[0.98]">
                         
-                        <div class="relative z-10 flex items-center justify-center space-x-3">
+                        <div class="relative z-10 flex items-center justify-center gap-3">
                             <span>Lanjutkan Presensi</span>
-                            <svg class="w-4 h-4 transition-transform duration-500 group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                             </svg>
                         </div>
                         
-                        <div class="absolute inset-0 bg-linear-to-r from-indigo-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        @if(!empty($kelasDiampu))
+                        <div class="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        @endif
                     </button>
                     
-                    <a href="{{ route('guru.dashboard') }}" class="block text-center mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">
-                        Batal & Kembali
-                    </a>
+                    <div class="text-center mt-6">
+                        <a href="{{ route('guru.dashboard') }}" class="inline-flex items-center gap-2 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest hover:text-slate-900 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                            Kembali ke Dashboard
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-<style>
-    /* Menghilangkan scrollbar di mobile jika kelas terlalu banyak */
-    .grid-container {
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-    .grid-container::-webkit-scrollbar {
-        display: none;
-    }
-</style>
 @endsection
