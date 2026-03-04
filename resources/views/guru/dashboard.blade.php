@@ -44,7 +44,7 @@
     {{-- 2. STATS GRID --}}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         {{-- Card: Total Jurnal --}}
-        <div class="bg-white p-6 rounded-4x1 border border-slate-100 shadow-sm">
+        <div class="bg-white p-6 rounded-4xl border border-slate-100 shadow-sm">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Jurnal</p>
             <div class="flex items-end gap-2">
                 <span class="text-3xl md:text-4xl font-black text-slate-900 leading-none">{{ $total_materi ?? 0 }}</span>
@@ -53,7 +53,7 @@
         </div>
 
         {{-- Card: Jurnal Bulan Ini --}}
-        <div class="bg-white p-6 rounded-4x1 border border-slate-100 shadow-sm">
+        <div class="bg-white p-6 rounded-4xl border border-slate-100 shadow-sm">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Bulan Ini</p>
             <div class="flex items-end gap-2">
                 <span class="text-3xl md:text-4xl font-black text-blue-600 leading-none">{{ $jurnal_bulan_ini ?? 0 }}</span>
@@ -61,17 +61,25 @@
             </div>
         </div>
 
-        {{-- Card: Total Siswa --}}
-        <div class="bg-white p-6 rounded-4x1 border border-slate-100 shadow-sm">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Siswa Diampu</p>
+        {{-- Card: Progres Administrasi (UPDATE: Pengganti Siswa Diampu) --}}
+        <div class="bg-white p-6 rounded-4xl border border-slate-100 shadow-sm">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Progres Jurnal</p>
             <div class="flex items-end gap-2">
-                <span class="text-3xl md:text-4xl font-black text-indigo-600 leading-none">{{ $total_siswa ?? 0 }}</span>
-                <span class="text-xs font-bold text-slate-400 mb-1">Orang</span>
+                @php
+                    // Target asumsi 20 entri/hari kerja per bulan
+                    $target = 20; 
+                    $persen = ($jurnal_bulan_ini ?? 0) > 0 ? min(round(($jurnal_bulan_ini / $target) * 100), 100) : 0;
+                @endphp
+                <span class="text-3xl md:text-4xl font-black text-indigo-600 leading-none">{{ $persen }}%</span>
+                <span class="text-xs font-bold text-slate-400 mb-1">Target</span>
+            </div>
+            <div class="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                <div class="bg-indigo-500 h-full rounded-full transition-all duration-500" style="width: {{ $persen }}%"></div>
             </div>
         </div>
 
         {{-- Card: Status Hari Ini --}}
-        <div class="bg-white p-6 rounded-4x1 border border-slate-100 shadow-sm">
+        <div class="bg-white p-6 rounded-4xl border border-slate-100 shadow-sm">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Status Hari Ini</p>
             <div class="flex flex-col gap-1">
                 @if($sudah_isi_hari_ini)
@@ -107,7 +115,7 @@
 
                 <div class="space-y-4">
                     @forelse($recent_materi as $materi)
-                    <div class="group relative bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 p-5 rounded-4x1 border border-slate-100 transition-all duration-300">
+                    <div class="group relative bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 p-5 rounded-4xl border border-slate-100 transition-all duration-300">
                         <div class="flex items-center gap-5">
                             <div class="flex flex-col items-center justify-center w-14 h-14 rounded-2xl bg-white border border-slate-100 text-slate-900 shrink-0 shadow-sm group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-colors">
                                 <span class="text-xl font-black leading-none">{{ \Carbon\Carbon::parse($materi->tanggal)->format('d') }}</span>
