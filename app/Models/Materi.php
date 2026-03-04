@@ -14,34 +14,32 @@ class Materi extends Model
     protected $fillable = [
         'guru_id', 
         'mata_pelajaran', 
-        'kelas', // Pastikan di DB tipe data ini integer/foreign key
+        'kelas',    // Field ini menyimpan string nama kelas (backup)
+        'kelas_id', // WAJIB ADA: Field ini yang dipakai untuk relasi belongsTo
         'materi_kd', 
         'kegiatan_pembelajaran', 
         'evaluasi', 
         'tanggal'
     ];
 
-    // --- RELASI KE KELAS ---
-    // Dipakai di view: $materi->kelas->nama_kelas
+    /**
+     * RELASI KE KELAS
+     * Menghubungkan kolom 'kelas_id' di tabel materis ke tabel kelas.
+     */
     public function kelas()
     {
-        // 1. Peningkatan: Tambahkan handling jika relasi kelas tidak ditemukan
+        // Menggunakan 'kelas_id' sebagai foreign key
         return $this->belongsTo(Kelas::class, 'kelas_id')->withDefault([
-            'nama_kelas' => 'Kelas Terhapus'
+            'nama_kelas' => $this->kelas ?? 'Kelas Terhapus' 
+            // Tip: Jika relasi ID gagal, ia akan menampilkan string dari kolom 'kelas'
         ]);
     }
 
-    // --- RELASI KE ABSENSI/PRESENSI ---
+    /**
+     * RELASI KE ABSENSI
+     */
     public function absensi()
     {
         return $this->hasMany(Absensi::class, 'materi_id');
     }
-
-    // 2. Peningkatan: Gunakan nama relasi yang konsisten
-    public function presensis()
-    {
-        return $this->hasMany(Absensi::class, 'materi_id');
-    }
-
-    // --- FUNGSI materis() DIHAPUS KARENA SALAH LOGIKA ---
 }

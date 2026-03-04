@@ -17,6 +17,7 @@ class AbsensiController extends Controller
 {
     /**
      * TAMPILAN: Riwayat Jurnal (FILTER BULAN/TAHUN)
+     * Ditambahkan with('kelas') agar nama kelas tampil di tabel riwayat.
      */
     public function index(Request $request) 
     {
@@ -27,7 +28,7 @@ class AbsensiController extends Controller
         $riwayatMateri = Materi::where('guru_id', $guru_id)
             ->whereYear('tanggal', $date->year)
             ->whereMonth('tanggal', $date->month)
-            ->with(['absensi' => function($query) {
+            ->with(['kelas', 'absensi' => function($query) {
                 $query->whereIn('status', ['sakit', 'izin', 'alfa']);
             }])
             ->latest('tanggal')
@@ -49,7 +50,7 @@ class AbsensiController extends Controller
         $riwayatJurnal = Materi::where('guru_id', $guru_id)
             ->whereYear('tanggal', $date->year)
             ->whereMonth('tanggal', $date->month)
-            ->with(['absensi' => function ($query) {
+            ->with(['kelas', 'absensi' => function ($query) {
                 $query->whereIn('status', ['sakit', 'izin', 'alfa'])
                       ->with('siswa');
             }])
@@ -60,31 +61,8 @@ class AbsensiController extends Controller
     }
 
     /**
-     * PROSES: Update Status Absensi per Siswa (MODAL EDIT)
-     */
-    public function updateAbsensi(Request $request, $id)
-    {
-        $request->validate([
-            'status' => 'required|in:Sakit,Izin,Alfa,Hadir,sakit,izin,alfa,hadir'
-        ]);
-
-        try {
-            $absensi = Absensi::findOrFail($id);
-            $namaSiswa = $absensi->siswa->nama ?? 'Siswa';
-            
-            $absensi->status = strtolower($request->status);
-            $absensi->save();
-
-            $statusText = ucfirst(strtolower($request->status));
-            return redirect()->back()->with('success', "Status $namaSiswa berhasil diubah menjadi $statusText.");
-        } catch (\Exception $e) {
-            Log::error("Gagal update absensi ID $id: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memperbarui data.');
-        }
-    }
-
-    /**
      * PROSES: Cetak PDF Rekap Ketidakhadiran Bulanan
+     * FIX: Memuat relasi 'kelas' agar tidak muncul "Tanpa Kelas" di PDF.
      */
     public function cetakHarian(Request $request)
     {
@@ -97,7 +75,7 @@ class AbsensiController extends Controller
         $riwayatJurnal = Materi::where('guru_id', $guru->id)
             ->whereYear('tanggal', $date->year)
             ->whereMonth('tanggal', $date->month)
-            ->with(['absensi' => function ($query) {
+            ->with(['kelas', 'absensi' => function ($query) {
                 $query->whereIn('status', ['sakit', 'izin', 'alfa'])
                       ->with('siswa');
             }])
@@ -108,23 +86,9 @@ class AbsensiController extends Controller
             return redirect()->back()->with('error', 'Tidak ada data absensi untuk periode ini.');
         }
 
-        $rekapSiswa = Siswa::whereHas('absensis', function($q) use ($date, $guru) {
-            $q->whereYear('tanggal', $date->year)
-              ->whereMonth('tanggal', $date->month)
-              ->whereHas('materi', function($m) use ($guru) {
-                  $m->where('guru_id', $guru->id);
-              });
-        })->withCount([
-            'absensis as sakit' => fn($q) => $q->whereYear('tanggal', $date->year)->whereMonth('tanggal', $date->month)->where('status', 'sakit'),
-            'absensis as izin' => fn($q) => $q->whereYear('tanggal', $date->year)->whereMonth('tanggal', $date->month)->where('status', 'izin'),
-            'absensis as alfa' => fn($q) => $q->whereYear('tanggal', $date->year)->whereMonth('tanggal', $date->month)->where('status', 'alfa'),
-        ])->get();
-
         $data = [
             'title'         => 'Laporan Ketidakhadiran Siswa Bulanan',
             'riwayatJurnal' => $riwayatJurnal,
-            'rekapSiswa'    => $rekapSiswa,
-            // PERBAIKAN: Kirim angka bulan (1-12) dan tahun agar Blade tidak error saat mem-parse
             'month'         => (int)$date->month,
             'year'          => (int)$date->year,
             'nama_guru'     => $guru->nama,
@@ -148,94 +112,36 @@ class AbsensiController extends Controller
         $periodeInput = $request->query('bulan_tahun', Carbon::today()->format('Y-m'));
         $date = Carbon::parse($periodeInput);
 
-        $jurnals = Materi::where('guru_id', $guru->id)
+        $riwayatJurnal = Materi::where('guru_id', $guru->id)
             ->whereYear('tanggal', $date->year)
             ->whereMonth('tanggal', $date->month)
-            ->with(['absensi' => function($query) {
+            ->with(['kelas', 'absensi' => function($query) {
                 $query->whereIn('status', ['sakit', 'izin', 'alfa'])->with('siswa');
             }])
             ->orderBy('tanggal', 'asc')
             ->get();
 
-        if ($jurnals->isEmpty()) {
+        if ($riwayatJurnal->isEmpty()) {
             return redirect()->back()->with('error', 'Tidak ada data jurnal untuk periode ini');
         }
-
-        $rekapSiswa = Siswa::whereHas('absensis', function($q) use ($date, $guru) {
-                $q->whereYear('tanggal', $date->year)
-                  ->whereMonth('tanggal', $date->month)
-                  ->whereHas('materi', function($m) use ($guru) {
-                      $m->where('guru_id', $guru->id);
-                  });
-            })
-            ->withCount([
-                'absensis as total_sakit' => function($q) use ($date) {
-                    $q->whereYear('tanggal', $date->year)->whereMonth('tanggal', $date->month)->where('status', 'sakit');
-                },
-                'absensis as total_izin' => function($q) use ($date) {
-                    $q->whereYear('tanggal', $date->year)->whereMonth('tanggal', $date->month)->where('status', 'izin');
-                },
-                'absensis as total_alfa' => function($q) use ($date) {
-                    $q->whereYear('tanggal', $date->year)->whereMonth('tanggal', $date->month)->where('status', 'alfa');
-                }
-            ])->get();
         
         $data = [
-            'title'      => 'Laporan Jurnal Mengajar Bulanan',
-            'jurnals'    => $jurnals, 
-            'rekapSiswa' => $rekapSiswa,
-            'nama_guru'  => $guru->nama,
-            'nip'        => $guru->nip ?? '-',
-            // PERBAIKAN: Kirim angka bulan (1-12) dan tahun agar Blade tidak error
-            'month'      => (int)$date->month,
-            'year'       => (int)$date->year,
+            'title'         => 'Laporan Jurnal Mengajar Bulanan',
+            'riwayatJurnal' => $riwayatJurnal, 
+            'nama_guru'     => $guru->nama,
+            'nip'           => $guru->nip ?? '-',
+            'month'         => (int)$date->month,
+            'year'          => (int)$date->year,
         ];
 
-        return Pdf::loadView('guru.absensi.rekap_pdf', $data)
+        return Pdf::loadView('guru.absensi.pdf', $data)
                     ->setPaper('a4', 'portrait')
                     ->download("Rekap_Jurnal_Bulanan_".$periodeInput.".pdf");
     }
 
     /**
-     * TAMPILAN: Pilih Kelas
-     */
-    public function selectClass()
-    {
-        $guru = Auth::guard('guru')->user();
-        $kelasDiampu = is_array($guru->kelas) ? $guru->kelas : explode(',', $guru->kelas);
-        $kelasDiampu = array_map('trim', $kelasDiampu);
-
-        return view('guru.absensi.select', compact('kelasDiampu'));
-    }
-
-    /**
-     * TAMPILAN: Form Input Absensi
-     */
-    public function create(Request $request)
-    {
-        $request->validate(['kelas' => 'required|string']);
-
-        $kelas_nama = trim($request->kelas);
-        $kelas = Kelas::where('nama_kelas', $kelas_nama)->first();
-
-        if (!$kelas) {
-            return redirect()->back()->with('error', "Data kelas $kelas_nama tidak ditemukan.");
-        }
-
-        $siswas = Siswa::where('kelas_id', $kelas->id)
-                        ->orWhere('kelas', 'LIKE', '%' . $kelas_nama . '%')
-                        ->orderBy('nama', 'asc')
-                        ->get();
-
-        return view('guru.absensi.index', [
-            'siswas' => $siswas,
-            'kelas_nama' => $kelas_nama,
-            'kelas_id' => $kelas->id 
-        ]);
-    }
-
-    /**
      * PROSES: Simpan Jurnal & Absensi
+     * FIX: Menambahkan pencarian kelas_id agar data tersimpan secara relasional.
      */
     public function storeJurnal(Request $request)
     {
@@ -251,18 +157,20 @@ class AbsensiController extends Controller
             DB::beginTransaction();
             $tanggalHariIni = Carbon::today()->toDateString();
 
+            // Cari ID Kelas berdasarkan nama yang dikirim dari form
+            $kelas = Kelas::where('nama_kelas', $request->kelas)->first();
+            if (!$kelas) throw new \Exception("Kelas $request->kelas tidak ditemukan di database.");
+
             $materi = Materi::create([
                 'guru_id'               => Auth::guard('guru')->id(),
+                'kelas_id'              => $kelas->id, // Menyimpan Foreign Key
                 'materi_kd'             => $request->materi_kd,
                 'kegiatan_pembelajaran' => $request->kegiatan_pembelajaran,
                 'evaluasi'              => $request->evaluasi,
                 'mata_pelajaran'        => $request->mata_pelajaran,
-                'kelas'                 => $request->kelas,
+                'kelas'                 => $request->kelas, // String backup
                 'tanggal'               => $tanggalHariIni,
             ]);
-
-            $kelas = Kelas::where('nama_kelas', $request->kelas)->first();
-            if (!$kelas) throw new \Exception("Kelas tidak ditemukan.");
 
             $semuaSiswa = Siswa::where('kelas_id', $kelas->id)->get();
             $dataAbsensi = [];
@@ -295,6 +203,67 @@ class AbsensiController extends Controller
             Log::error("Gagal simpan jurnal: " . $e->getMessage());
             return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * PROSES: Update Status Absensi per Siswa (MODAL EDIT)
+     */
+    public function updateAbsensi(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:Sakit,Izin,Alfa,Hadir,sakit,izin,alfa,hadir'
+        ]);
+
+        try {
+            $absensi = Absensi::findOrFail($id);
+            $namaSiswa = $absensi->siswa->nama ?? 'Siswa';
+            
+            $absensi->status = strtolower($request->status);
+            $absensi->save();
+
+            $statusText = ucfirst(strtolower($request->status));
+            return redirect()->back()->with('success', "Status $namaSiswa berhasil diubah menjadi $statusText.");
+        } catch (\Exception $e) {
+            Log::error("Gagal update absensi ID $id: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui data.');
+        }
+    }
+
+    /**
+     * TAMPILAN: Pilih Kelas
+     */
+    public function selectClass()
+    {
+        $guru = Auth::guard('guru')->user();
+        $kelasDiampu = is_array($guru->kelas) ? $guru->kelas : explode(',', $guru->kelas);
+        $kelasDiampu = array_map('trim', $kelasDiampu);
+
+        return view('guru.absensi.select', compact('kelasDiampu'));
+    }
+
+    /**
+     * TAMPILAN: Form Input Absensi
+     */
+    public function create(Request $request)
+    {
+        $request->validate(['kelas' => 'required|string']);
+
+        $kelas_nama = trim($request->kelas);
+        $kelas = Kelas::where('nama_kelas', $kelas_nama)->first();
+
+        if (!$kelas) {
+            return redirect()->back()->with('error', "Data kelas $kelas_nama tidak ditemukan.");
+        }
+
+        $siswas = Siswa::where('kelas_id', $kelas->id)
+                        ->orderBy('nama', 'asc')
+                        ->get();
+
+        return view('guru.absensi.index', [
+            'siswas' => $siswas,
+            'kelas_nama' => $kelas_nama,
+            'kelas_id' => $kelas->id 
+        ]);
     }
 
     /**

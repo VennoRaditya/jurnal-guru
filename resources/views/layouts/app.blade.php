@@ -24,22 +24,28 @@
         }
     </script>
     <style>
+        /* --- CORE BASE --- */
+        html {
+            scrollbar-gutter: stable; /* Mencegah layout shift saat modal muncul */
+        }
+        
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif;
             letter-spacing: -0.02em;
             -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
         }
 
-        /* --- GLOBAL LOADER CSS (FIXED) --- */
+        /* --- GLOBAL LOADER CSS --- */
         #global-loader {
             display: flex;
+            position: fixed;
+            inset: 0;
+            background-color: #ffffff;
+            z-index: 99999;
             opacity: 1;
             visibility: visible;
-            /* Transisi lebih halus */
             transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
-            background-color: #ffffff;
-            /* Z-index sangat tinggi agar menutupi segalanya */
-            z-index: 99999;
         }
 
         #global-loader.loader-hidden {
@@ -98,30 +104,32 @@
 
         .no-scroll { overflow: hidden; }
 
-        /* --- MODAL CSS --- */
         .modal-transition {
             transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
         }
+
+        /* Prevent link tap blue highlight on mobile */
+        a, button { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-900 overflow-x-hidden">
+<body class="bg-[#f8fafc] text-slate-900">
 
-    <div id="global-loader" class="fixed inset-0 flex flex-col items-center justify-center">
-        <div class="flex flex-col items-center">
-            <div class="relative mb-6">
-                <div class="absolute -inset-3 border-2 border-blue-100 rounded-full animate-ping opacity-60"></div>
+    <div id="global-loader" class="flex flex-col items-center justify-center">
+        <div class="flex flex-col items-center w-full max-w-60 px-6">
+            <div class="relative mb-8">
+                <div class="absolute -inset-4 border-2 border-blue-100 rounded-full animate-ping opacity-40"></div>
                 <img src="{{ asset('images/logo43.png') }}" 
                      alt="Logo SMKN 43" 
                      class="w-20 h-20 object-contain relative z-10 loader-logo-pulse rounded-2xl p-1 bg-white shadow-xl"
                      onerror="this.src='https://ui-avatars.com/api/?name=SMKN43&background=2563eb&color=fff'">
             </div>
             
-            <div class="w-56 h-1.5 bg-slate-100 rounded-full overflow-hidden relative shadow-inner">
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden relative shadow-inner">
                 <div class="absolute top-0 left-0 h-full w-1/2 bg-blue-600 rounded-full animate-loading-bar"></div>
             </div>
             
-            <p class="mt-5 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-                Memuat <span class="text-blue-600">Halaman</span>
+            <p class="mt-6 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 text-center">
+                Memproses <span class="text-blue-600">Data</span>
             </p>
         </div>
     </div>
@@ -133,7 +141,7 @@
             <div class="flex items-center gap-4 mb-10 pl-2">
                 <div class="relative group">
                     <div class="absolute inset-0 bg-blue-600 rounded-2xl rotate-6 group-hover:rotate-0 transition-transform duration-300 opacity-10"></div>
-                    <img src="{{ asset('images/logo_smkn_43.jpg') }}" 
+                    <img src="{{ asset('images/logo43.png') }}" 
                          alt="Logo" 
                          class="w-14 h-14 rounded-2xl object-cover shadow-lg relative z-10 border border-white"
                          onerror="this.src='https://ui-avatars.com/api/?name=SMKN43&background=2563eb&color=fff'">
@@ -173,12 +181,12 @@
         </div>
 
         <div class="p-6 border-t border-slate-50 bg-slate-50/50">
-            <div class="flex items-center gap-3 mb-6 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-                <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm shadow-lg uppercase shrink-0">
+            <div class="flex items-center gap-3 mb-6 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xs shadow-lg uppercase shrink-0">
                     {{ substr(Auth::guard('guru')->user()->nama, 0, 1) }}
                 </div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-black text-slate-800 uppercase leading-tight truncate">
+                <div class="min-w-0">
+                    <p class="text-[11px] font-black text-slate-800 uppercase leading-tight truncate">
                         {{ Auth::guard('guru')->user()->nama }}
                     </p>
                     <p class="text-[9px] font-bold text-slate-400 tracking-widest uppercase mt-0.5 truncate">
@@ -187,8 +195,10 @@
                 </div>
             </div>
             
-            <button type="button" onclick="openLogoutModal()" class="w-full flex justify-center items-center gap-2 bg-slate-900 text-white py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-600 transition-all duration-300 active:scale-95 shadow-lg shadow-slate-200">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <button type="button" onclick="openLogoutModal()" class="w-full flex justify-center items-center gap-2 bg-slate-900 text-white py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-600 transition-all duration-300 active:scale-95 shadow-lg shadow-slate-200">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
                 Logout
             </button>
         </div>
@@ -197,14 +207,14 @@
     <main class="flex-1 md:ml-72 min-h-screen flex flex-col">
         <header class="h-20 md:h-24 glass-effect border-b border-slate-100 flex items-center justify-between px-4 md:px-8 sticky top-0 z-20">
             <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="md:hidden p-3 rounded-2xl bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-all border border-slate-100 shadow-sm">
+                <button onclick="toggleSidebar()" class="md:hidden p-3 rounded-2xl bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-all border border-slate-100 shadow-sm active:scale-90">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
                 </button>
 
                 <div>
-                    <h2 class="text-sm md:text-xl font-black text-slate-900 tracking-tight truncate max-w-[200px] md:max-w-none">
+                    <h2 class="text-sm md:text-xl font-black text-slate-900 tracking-tight truncate max-w-[180px] md:max-w-none">
                         @yield('header_title')
                     </h2>
                     <div class="hidden sm:flex items-center gap-2 mt-0.5">
@@ -214,16 +224,14 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-2 md:gap-4">
-                <div class="bg-white border border-slate-100 px-4 py-2 md:px-5 md:py-2.5 rounded-2xl flex items-center gap-3 shadow-sm">
+            <div class="flex items-center gap-2">
+                <div class="bg-white border border-slate-100 px-3 py-2 md:px-5 md:py-2.5 rounded-2xl flex items-center gap-3 shadow-sm">
                     <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    <p class="text-[10px] md:text-xs font-black text-slate-700 uppercase tracking-tighter hidden md:block">
-                        {{ date('l, d M Y') }}
-                    </p>
-                    <p class="text-[10px] font-black text-slate-700 uppercase tracking-tighter md:hidden">
-                        {{ date('d/m/y') }}
+                    <p class="text-[10px] md:text-xs font-black text-slate-700 uppercase tracking-tighter">
+                        <span class="hidden md:inline">{{ date('l, d M Y') }}</span>
+                        <span class="md:hidden">{{ date('d/m/y') }}</span>
                     </p>
                 </div>
             </div>
@@ -233,33 +241,35 @@
             @yield('content')
         </div>
 
-        <footer class="text-center p-6 text-[10px] text-slate-400 font-medium">
-            &copy; {{ date('Y') }} JurnalGuru 43 - SMKN 43 Jakarta.
+        <footer class="text-center p-6 text-[10px] text-slate-400 font-medium tracking-widest uppercase">
+            &copy; {{ date('Y') }} IT SMKN 43 Jakarta
         </footer>
     </main>
 
-    <div id="logoutModal" class="fixed inset-0 z-10000 items-center justify-center hidden opacity-0 modal-transition">
+    <div id="logoutModal" class="fixed inset-0 z-100 items-center justify-center hidden opacity-0 modal-transition">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeLogoutModal()"></div>
         
-        <div class="bg-white rounded-3xl p-8 m-4 shadow-2xl relative z-10 w-full max-w-sm transform scale-95 transition-transform duration-300">
+        <div class="bg-white rounded-4x1 p-8 m-4 shadow-2xl relative z-10 w-full max-w-sm transform scale-95 transition-all duration-300">
             <div class="flex flex-col items-center text-center">
-                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-6">
-                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <div class="w-20 h-20 rounded-full bg-rose-50 flex items-center justify-center mb-6">
+                    <svg class="w-10 h-10 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
                 </div>
                 
-                <h3 class="text-xl font-black text-slate-900 mb-2">Konfirmasi Logout</h3>
-                <p class="text-sm text-slate-500 mb-8">Apakah Anda yakin ingin keluar dari aplikasi? Pastikan semua pekerjaan sudah disimpan.</p>
+                <h3 class="text-xl font-black text-slate-900 mb-2">Akhiri Sesi?</h3>
+                <p class="text-sm text-slate-500 mb-8 leading-relaxed">Pastikan semua laporan jurnal dan presensi Anda telah tersimpan dengan benar.</p>
                 
-                <div class="flex gap-3 w-full">
-                    <button onclick="closeLogoutModal()" class="flex-1 bg-slate-100 text-slate-700 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-slate-200 transition-all active:scale-95">
-                        Batal
-                    </button>
-                    <form action="{{ route('guru.logout') }}" method="POST" class="flex-1">
+                <div class="flex flex-col gap-3 w-full">
+                    <form action="{{ route('guru.logout') }}" method="POST" class="w-full">
                         @csrf
-                        <button type="submit" class="w-full bg-red-600 text-white py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-100">
-                            Ya, Keluar
+                        <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-600 transition-all active:scale-95 shadow-lg">
+                            Ya, Logout Sekarang
                         </button>
                     </form>
+                    <button onclick="closeLogoutModal()" class="w-full bg-slate-100 text-slate-600 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95">
+                        Kembali
+                    </button>
                 </div>
             </div>
         </div>
@@ -272,60 +282,53 @@
         const body = document.body;
         const logoutModal = document.getElementById('logoutModal');
 
-        // --- GLOBAL LOADER LOGIC ---
+        // --- 1. GLOBAL LOADER LOGIC ---
         const hideLoader = () => {
             loader.classList.add('loader-hidden');
-            // Menghapus elemen setelah transisi selesai
-            setTimeout(() => {
-                loader.style.display = 'none';
-            }, 400); // Harus sama dengan waktu transisi CSS
+            setTimeout(() => { loader.style.display = 'none'; }, 400);
         };
+        
         const showLoader = () => {
             loader.style.display = 'flex';
-            // Perlu sedikit delay agar display flex terproses sebelum opacity berubah
-            setTimeout(() => {
-                loader.classList.remove('loader-hidden');
-            }, 10);
+            setTimeout(() => { loader.classList.remove('loader-hidden'); }, 10);
         };
 
-        // Hilang saat halaman selesai dimuat
         window.addEventListener('load', hideLoader);
-        // Backup: Hilang otomatis setelah 5 detik
-        setTimeout(hideLoader, 5000);
+        setTimeout(hideLoader, 5000); // Safety timeout
 
-        // Interaksi Link: Tampilkan loader saat pindah halaman
+        // Loader for Navigation
         document.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', function(e) {
                 const href = this.getAttribute('href');
                 const target = this.getAttribute('target');
                 
-                if (href && !href.startsWith('#') && href !== 'javascript:void(0)' && target !== '_blank' && !this.hasAttribute('download')) {
-                    if (this.href !== window.location.href) {
+                const isInternalAction = !href || href.startsWith('#') || href.startsWith('javascript') || href.startsWith('mailto:') || href.startsWith('tel:');
+                const isExternalOrDownload = target === '_blank' || this.hasAttribute('download');
+
+                if (!isInternalAction && !isExternalOrDownload) {
+                    if (this.href.split('#')[0] !== window.location.href.split('#')[0]) {
                         showLoader();
                     }
                 }
             });
         });
 
-        // Interaksi Form: Tampilkan loader saat submit
+        // Loader for Forms
         document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const isModalForm = this.closest('.modal') || this.closest('[role="dialog"]') || this.closest('#logoutModal');
-                const hasNoLoader = this.classList.contains('no-loader');
-                const isFilterForm = this.getAttribute('method')?.toUpperCase() === 'GET';
-                
-                if (!isModalForm && !hasNoLoader && !isFilterForm) {
+            form.addEventListener('submit', function() {
+                const isNoLoader = this.classList.contains('no-loader');
+                const isGetMethod = this.getAttribute('method')?.toUpperCase() === 'GET';
+                const isModalForm = this.closest('#logoutModal');
+
+                if (!isNoLoader && !isGetMethod && !isModalForm) {
                     showLoader();
                 }
             });
         });
 
-        // Tombol Back Browser
-        window.addEventListener('pageshow', (event) => {
-            if (event.persisted) hideLoader();
-        });
+        window.addEventListener('pageshow', (event) => { if (event.persisted) hideLoader(); });
 
-        // --- SIDEBAR LOGIC ---
+        // --- 2. SIDEBAR LOGIC ---
         function toggleSidebar() {
             const isHidden = sidebar.classList.contains('-translate-x-full');
             if (isHidden) {
@@ -340,32 +343,29 @@
                 body.classList.remove('no-scroll');
             }
         }
-
         overlay.addEventListener('click', toggleSidebar);
 
-        // --- MODAL LOGIC ---
+        // --- 3. MODAL LOGIC ---
         function openLogoutModal() {
             logoutModal.classList.remove('hidden');
             setTimeout(() => {
                 logoutModal.classList.add('opacity-100');
                 logoutModal.querySelector('div:last-child').classList.remove('scale-95');
+                logoutModal.querySelector('div:last-child').classList.add('scale-100');
             }, 10);
             body.classList.add('no-scroll');
         }
 
         function closeLogoutModal() {
             logoutModal.classList.remove('opacity-100');
+            logoutModal.querySelector('div:last-child').classList.remove('scale-100');
             logoutModal.querySelector('div:last-child').classList.add('scale-95');
-            setTimeout(() => {
-                logoutModal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { logoutModal.classList.add('hidden'); }, 300);
             body.classList.remove('no-scroll');
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !logoutModal.classList.contains('hidden')) {
-                closeLogoutModal();
-            }
+            if (e.key === 'Escape' && !logoutModal.classList.contains('hidden')) closeLogoutModal();
         });
     </script>
 </body>
