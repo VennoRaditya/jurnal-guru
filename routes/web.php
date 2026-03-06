@@ -92,28 +92,49 @@ Route::prefix('guru')->group(function () {
             Route::get('/isi-jurnal', [AbsensiController::class, 'create'])->name('create');
             Route::post('/store', [AbsensiController::class, 'storeJurnal'])->name('storeJurnal');
 
-            // Rekap & Update
+            // Rekap & Update Status
             Route::get('/rekap', [AbsensiController::class, 'rekapHarian'])->name('rekap');
             Route::put('/update/{id}', [AbsensiController::class, 'updateAbsensi'])->name('update');
             
-            // Cetak & Export
+            // Fitur Cetak & Export
             Route::get('/export-excel', [AbsensiController::class, 'exportExcel'])->name('exportExcel');
+            
+            // PDF Landscape (Rekap Lengkap Jurnal + Absen)
             Route::get('/rekap-pdf', [AbsensiController::class, 'rekapPdf'])->name('rekapPdf'); 
+            Route::get('/cetak-pdf', [AbsensiController::class, 'rekapPdf'])->name('cetakPdf'); 
+            
+            // PDF Portrait (Khusus Rekapitulasi Ketidakhadiran S, I, A, T)
             Route::get('/cetak-portrait', [AbsensiController::class, 'absensiPdf'])->name('absensiOnlyPdf'); 
         });
-
-        // ALIAS UNTUK MENGATASI ERROR (guru.presensi.select)
-        Route::get('/presensi/pilih-kelas', [AbsensiController::class, 'selectClass'])->name('guru.presensi.select');
 
         // --- MANAJEMEN MATERI / RIWAYAT JURNAL ---
         Route::prefix('materi')->name('guru.materi.')->group(function () {
             Route::get('/', [AbsensiController::class, 'index'])->name('index'); 
-            Route::get('/cetak', [AbsensiController::class, 'rekapPdf'])->name('cetak'); 
+            Route::get('/cetak', [AbsensiController::class, 'rekapPdf'])->name('cetak');
             Route::get('/{id}', [MateriController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [MateriController::class, 'edit'])->name('edit'); 
             Route::put('/{id}', [MateriController::class, 'update'])->name('update'); 
             Route::delete('/{id}', [AbsensiController::class, 'destroy'])->name('destroy'); 
         });
+
+        // ============================================================
+        //  ALIAS / FALLBACK ROUTES (MENCEGAH ERROR "Route Not Found")
+        // ============================================================
+        
+        // Membungkus alias dalam satu name group "guru.presensi."
+        Route::name('guru.presensi.')->group(function () {
+            // Mengatasi Error: Route [guru.presensi.create] not defined
+            Route::get('/absensi/isi-jurnal/create-alias', [AbsensiController::class, 'create'])->name('create');
+            
+            // Mengatasi Error: Route [guru.presensi.select] not defined
+            Route::get('/absensi/pilih-kelas/select-alias', [AbsensiController::class, 'selectClass'])->name('select');
+
+            // Mengatasi Error: Route [guru.presensi.storeJurnal] not defined
+            Route::post('/absensi/store/alias', [AbsensiController::class, 'storeJurnal'])->name('storeJurnal');
+        });
+
+        // Alias tambahan untuk cetak jika dipanggil dari luar prefix absensi
+        Route::get('/cetak-pdf-rekap-absen', [AbsensiController::class, 'absensiPdf'])->name('guru.absensi.cetakPdf');
 
         Route::post('/logout', [GuruAuthController::class, 'logout'])->name('guru.logout');
     });

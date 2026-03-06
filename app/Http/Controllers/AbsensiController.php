@@ -99,7 +99,7 @@ class AbsensiController extends Controller
     }
 
     /**
-     * PROSES: Cetak PDF Rekap Bulanan (Jurnal & Absensi Lengkap)
+     * PROSES: Cetak PDF Rekap Bulanan (Jurnal & Absensi Lengkap - Landscape)
      */
     public function rekapPdf(Request $request)
     {
@@ -143,8 +143,8 @@ class AbsensiController extends Controller
     }
 
     /**
-     * PROSES: Cetak PDF Khusus Absensi (Ketidakhadiran Siswa)
-     * Ditujukan untuk file view: resources/views/guru/absensi/pdf.blade.php
+     * PROSES: Cetak PDF Khusus Absensi (Ketidakhadiran Siswa - Portrait)
+     * View: resources/views/guru/absensi/pdf.blade.php
      */
     public function absensiPdf(Request $request)
     {
