@@ -5,7 +5,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Rekap Jurnal Bulanan - {{ $nama_guru }}</title>
     <style>
-        /* Standar Font & Halaman */
         body { 
             font-family: 'Helvetica', 'Arial', sans-serif; 
             font-size: 10pt; 
@@ -16,7 +15,6 @@
         }
         @page { margin: 1cm 1.5cm; }
 
-        /* Kop Surat */
         .kop-surat { 
             border-bottom: 3px double #000; 
             padding-bottom: 10px; 
@@ -25,20 +23,18 @@
             position: relative;
         }
         .logo { 
-            width: 80px; 
+            width: 70px; 
             position: absolute; 
             left: 0; 
             top: 0; 
         }
         .text-kop { 
             text-align: center; 
-            margin-left: 70px; 
         }
         .text-kop p { margin: 2px 0; font-size: 10pt; }
-        .text-kop h1 { font-size: 18pt; margin: 0; text-transform: uppercase; }
+        .text-kop h1 { font-size: 16pt; margin: 0; text-transform: uppercase; }
         .text-kop .alamat { font-size: 8pt; font-style: italic; }
 
-        /* Judul Laporan */
         .title-report { 
             text-align: center; 
             margin-bottom: 20px; 
@@ -51,11 +47,9 @@
         }
         .title-report p { margin: 5px 0; font-weight: bold; }
 
-        /* Info Guru */
         .info-table { width: 100%; margin-bottom: 15px; border: none; }
         .info-table td { border: none; padding: 2px 0; }
         
-        /* Tabel Data Jurnal */
         table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -63,12 +57,10 @@
         }
         th, td { 
             border: 1px solid #000; 
-            padding: 8px 5px; 
+            padding: 6px 4px; 
             word-wrap: break-word; 
             vertical-align: top; 
-            /* 1. PENINGKATAN: Mengatasi masalah teks panjang meluap */
             overflow-wrap: break-word;
-            word-break: break-word;
         }
         th { 
             background-color: #e9e9e9; 
@@ -77,7 +69,6 @@
             text-align: center;
         }
 
-        /* Area Tanda Tangan */
         .footer-ttd { 
             margin-top: 30px; 
             width: 100%; 
@@ -89,7 +80,6 @@
             vertical-align: bottom; 
         }
 
-        /* Utility */
         .text-center { text-align: center; }
         tr { page-break-inside: avoid; }
         thead { display: table-header-group; }
@@ -98,7 +88,12 @@
 <body>
 
     <div class="kop-surat">
-        <img src="{{ public_path('images/logo_smkn_43.jpg') }}" class="logo">
+        {{-- Gunakan pengecekan file agar tidak error jika gambar tidak ada --}}
+        @php $logoPath = public_path('images/logo_smkn_43.jpg'); @endphp
+        @if(file_exists($logoPath))
+            <img src="{{ $logoPath }}" class="logo">
+        @endif
+        
         <div class="text-kop">
             <p>PEMERINTAH PROVINSI DKI JAKARTA</p>
             <p>DINAS PENDIDIKAN</p>
@@ -110,7 +105,8 @@
 
     <div class="title-report">
         <h2>Jurnal Pembelajaran Bulanan</h2>
-        <p>PERIODE: {{ \Carbon\Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y') }}</p>
+        {{-- Gunakan variabel $date yang sudah dikirim dari Controller --}}
+        <p>PERIODE: {{ $date->translatedFormat('F Y') }}</p>
     </div>
 
     <table class="info-table">
@@ -122,33 +118,39 @@
             <td width="2%">:</td>
             <td>{{ $nip }}</td>
         </tr>
+        <tr>
+            <td>Tahun</td>
+            <td>:</td>
+            <td colspan="4">{{ $year }}</td>
+        </tr>
     </table>
 
     <table>
         <thead>
             <tr>
-                <th style="width: 30px;">No</th>
-                <th style="width: 75px;">Tanggal</th>
-                <th style="width: 65px;">Kelas</th>
-                <th style="width: 140px;">Materi / KD</th>
+                <th style="width: 25px;">No</th>
+                <th style="width: 70px;">Tanggal</th>
+                <th style="width: 60px;">Kelas</th>
+                <th style="width: 130px;">Materi / KD</th>
                 <th>Kegiatan Pembelajaran</th>
-                <th style="width: 120px;">Evaluasi / Hambatan</th>
+                <th style="width: 110px;">Evaluasi / Hambatan</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($jurnals as $index => $item)
+            {{-- PERBAIKAN: Mengganti $jurnals menjadi $riwayatJurnal --}}
+            @forelse($riwayatJurnal as $index => $item)
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td class="text-center">{{ \Carbon\Carbon::parse($item->tanggal)->translatedFormat('d/m/Y') }}</td>
                 <td class="text-center">{{ $item->kelas }}</td>
                 <td>{{ $item->materi_kd }}</td>
-                <td style="text-align: left;">{{ $item->kegiatan_pembelajaran }}</td>
+                <td>{{ $item->kegiatan_pembelajaran }}</td>
                 <td>{{ $item->evaluasi }}</td>
             </tr>
             @empty
             <tr>
                 <td colspan="6" class="text-center" style="padding: 20px; font-style: italic;">
-                    Tidak ada rekaman pembelajaran untuk bulan ini.
+                    Tidak ada rekaman pembelajaran untuk periode ini.
                 </td>
             </tr>
             @endforelse
@@ -157,7 +159,7 @@
 
     <table class="footer-ttd">
         <tr>
-            <td width="65%"></td>
+            <td width="60%"></td>
             <td>
                 <p>Jakarta, {{ now()->translatedFormat('d F Y') }}</p>
                 <p>Guru Mata Pelajaran,</p>

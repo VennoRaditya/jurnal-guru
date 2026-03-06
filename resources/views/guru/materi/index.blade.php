@@ -36,33 +36,36 @@
             </div>
 
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-                {{-- Form Filter Bulan --}}
-                <form action="{{ route('guru.materi.index') }}" method="GET" id="filterForm" class="w-full">
+                {{-- Form Filter --}}
+                <form action="{{ route('guru.materi.index') }}" method="GET" id="filterForm" class="w-full sm:w-48">
                     <input type="month" name="bulan_tahun" onchange="this.form.submit()"
-                           value="{{ request('bulan_tahun', now()->format('Y-m')) }}"
-                           class="w-full bg-slate-50 border border-slate-50 rounded-2xl px-5 py-4 text-[10px] font-black uppercase tracking-widest focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all outline-none">
+                           value="{{ request('bulan_tahun', date('Y-m')) }}"
+                           class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-[10px] font-black uppercase tracking-widest focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all outline-none text-center">
                 </form>
 
                 <div class="flex items-center gap-2 w-full sm:w-auto">
-                    {{-- Tombol Cetak PDF --}}
-                    <form action="{{ route('guru.absensi.cetakPdf') }}" method="GET" class="flex-1">
-                        <input type="hidden" name="bulan_tahun" value="{{ request('bulan_tahun', now()->format('Y-m')) }}">
-                        <button type="submit" class="w-full bg-rose-50 text-rose-500 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                            </svg>
-                            Cetak
-                        </button>
-                    </form>
+                    {{-- Tombol Cetak Rekap (Sinkron dengan Filter) --}}
+                    <a href="{{ route('guru.absensi.rekapPdf', ['bulan_tahun' => request('bulan_tahun', date('Y-m'))]) }}" 
+                       target="_blank"
+                       class="flex-1 sm:flex-none bg-rose-500 text-white px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                        <span>Cetak PDF</span>
+                    </a>
 
-                    <a href="{{ route('guru.presensi.select') }}" class="flex-1 bg-slate-900 text-white px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200">
-                        <span>+ Baru</span>
+                    {{-- Tombol Tambah --}}
+                    <a href="{{ route('guru.presensi.select') }}" class="flex-1 sm:flex-none bg-slate-900 text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span>Baru</span>
                     </a>
                 </div>
             </div>
         </div>
 
-        {{-- DESKTOP VIEW: Table --}}
+        {{-- DESKTOP VIEW --}}
         <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -76,12 +79,21 @@
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse($riwayatMateri as $materi)
+                    @php
+                        $counts = $materi->absensi->groupBy(function($item) {
+                            return strtolower($item->status);
+                        })->map->count();
+                    @endphp
                     <tr class="hover:bg-blue-50/30 transition-all group">
                         <td class="pl-12 pr-6 py-8">
                             <p class="text-sm font-black text-slate-700 uppercase tracking-tight">{{ \Carbon\Carbon::parse($materi->tanggal)->translatedFormat('d M Y') }}</p>
                             <div class="flex items-center gap-2 mt-2">
-                                <span class="text-[9px] font-black bg-indigo-600 text-white px-2.5 py-1 rounded-lg shadow-sm">{{ $materi->kelas->nama_kelas ?? '-' }}</span>
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest line-clamp-1">{{ $materi->mata_pelajaran }}</span>
+                                <span class="text-[9px] font-black bg-indigo-600 text-white px-2.5 py-1 rounded-lg shadow-sm">
+                                    {{ $materi->kelas->nama_kelas ?? $materi->kelas }}
+                                </span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest line-clamp-1">
+                                    {{ $materi->mata_pelajaran }}
+                                </span>
                             </div>
                         </td>
                         <td class="px-6 py-8 max-w-xs">
@@ -98,118 +110,112 @@
                         <td class="px-6 py-8">
                             <div class="flex justify-center items-center gap-1.5">
                                 <div class="w-8 h-8 flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-[10px] font-black border border-emerald-100" title="Hadir">
-                                    {{ $materi->absensi->where('status', 'hadir')->count() }}
+                                    {{ $counts['hadir'] ?? 0 }}
+                                </div>
+                                <div class="w-8 h-8 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 text-[10px] font-black border border-blue-100" title="Terlambat">
+                                    {{ $counts['terlambat'] ?? 0 }}
                                 </div>
                                 <div class="w-8 h-8 flex items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-[10px] font-black border border-amber-100" title="Izin/Sakit">
-                                    {{ $materi->absensi->whereIn('status', ['sakit', 'izin'])->count() }}
+                                    {{ ($counts['izin'] ?? 0) + ($counts['sakit'] ?? 0) }}
                                 </div>
                                 <div class="w-8 h-8 flex items-center justify-center rounded-xl bg-rose-50 text-rose-600 text-[10px] font-black border border-rose-100" title="Alfa">
-                                    {{ $materi->absensi->where('status', 'alfa')->count() }}
+                                    {{ $counts['alfa'] ?? 0 }}
                                 </div>
                             </div>
                         </td>
-                        <td class="pr-12 pl-6 py-8 text-right">
-                            <form action="{{ route('guru.materi.destroy', $materi->id) }}" method="POST" class="delete-form">
+                        <td class="pr-12 pl-6 py-8 text-right flex justify-end gap-2">
+                            {{-- Cetak Satuan --}}
+                            <a href="{{ route('guru.absensi.cetakPdf', $materi->id) }}" target="_blank"
+                               class="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm" title="Cetak Jurnal Hari Ini">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                </svg>
+                            </a>
+
+                            <form action="{{ route('guru.materi.destroy', $materi->id) }}" method="POST" class="delete-form inline-block">
                                 @csrf @method('DELETE')
-                                <button type="button" class="delete-btn w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center ml-auto hover:bg-rose-500 hover:text-white transition-all">
+                                <button type="button" class="delete-btn w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 </button>
                             </form>
                         </td>
                     </tr>
                     @empty
+                    <tr>
+                        <td colspan="5" class="py-20 text-center">
+                            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data tidak ditemukan pada periode ini</p>
+                        </td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        {{-- MOBILE VIEW: Stacked Cards --}}
-        <div class="md:hidden space-y-4 px-2">
+        {{-- MOBILE VIEW --}}
+        <div class="md:hidden space-y-4 px-2 pt-4">
             @forelse($riwayatMateri as $materi)
+            @php
+                $mCounts = $materi->absensi->groupBy(function($item) {
+                    return strtolower($item->status);
+                })->map->count();
+            @endphp
             <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-                {{-- Header Card: Tanggal & Aksi --}}
-                <div class="flex justify-between items-start gap-4">
+                <div class="flex justify-between items-start">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0">
+                        <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
                             <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
                         </div>
                         <div>
-                            <p class="text-[11px] font-black text-slate-800 uppercase tracking-tight">
-                                {{ \Carbon\Carbon::parse($materi->tanggal)->translatedFormat('d M Y') }}
-                            </p>
-                            <span class="text-[9px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-lg shadow-sm">
-                                {{ $materi->kelas->nama_kelas ?? '-' }}
-                            </span>
+                            <p class="text-[11px] font-black text-slate-800 uppercase">{{ \Carbon\Carbon::parse($materi->tanggal)->translatedFormat('d M Y') }}</p>
+                            <span class="text-[9px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-lg">{{ $materi->kelas->nama_kelas ?? $materi->kelas }}</span>
                         </div>
                     </div>
                     
-                    {{-- Tombol Hapus Mobile --}}
-                    <form action="{{ route('guru.materi.destroy', $materi->id) }}" method="POST" class="delete-form">
-                        @csrf @method('DELETE')
-                        <button type="button" class="delete-btn w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center active:scale-90 transition-all border border-rose-100/50">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                    </form>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('guru.absensi.cetakPdf', $materi->id) }}" target="_blank" class="w-9 h-9 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        </a>
+                        <form action="{{ route('guru.materi.destroy', $materi->id) }}" method="POST" class="delete-form">
+                            @csrf @method('DELETE')
+                            <button type="button" class="delete-btn w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
-                {{-- Konten: Materi & Mapel --}}
-                <div class="bg-slate-50/70 p-4 rounded-2xl border border-slate-100/50">
-                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Mata Pelajaran & Materi</p>
-                    <p class="text-[10px] font-black text-indigo-700 uppercase tracking-tight line-clamp-1 mb-1">{{ $materi->mata_pelajaran }}</p>
-                    <h4 class="text-[12px] font-black text-slate-800 leading-snug uppercase tracking-tight line-clamp-2">
-                        {{ $materi->materi_kd }}
-                    </h4>
-                </div>
-                
-                {{-- Konten: Kegiatan (Optional) --}}
-                @if($materi->kegiatan_pembelajaran)
-                <div class="border-l-2 border-slate-200 pl-3">
-                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Kegiatan</p>
-                    <p class="text-[10px] text-slate-600 font-medium leading-relaxed italic line-clamp-2">
-                        {{ $materi->kegiatan_pembelajaran }}
-                    </p>
-                </div>
-                @endif
-
-                {{-- Footer Card: Stats Absensi --}}
-                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
-                    <div class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-emerald-50/50 border border-emerald-100">
-                        <span class="text-[7px] font-black text-emerald-700 uppercase tracking-widest">Hadir</span>
-                        <span class="text-[16px] font-black text-emerald-600">
-                            {{ $materi->absensi->where('status', 'hadir')->count() }}
-                        </span>
+                <div class="grid grid-cols-4 gap-2 pt-2 border-t border-slate-100">
+                    <div class="flex flex-col items-center p-3 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+                        <span class="text-[7px] font-black text-emerald-700 uppercase">Hadir</span>
+                        <span class="text-[14px] font-black text-emerald-600">{{ $mCounts['hadir'] ?? 0 }}</span>
                     </div>
-                    <div class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-amber-50/50 border border-amber-100">
-                        <span class="text-[7px] font-black text-amber-700 uppercase tracking-widest">Izin/Sakit</span>
-                        <span class="text-[16px] font-black text-amber-600">
-                            {{ $materi->absensi->whereIn('status', ['sakit', 'izin'])->count() }}
-                        </span>
+                    <div class="flex flex-col items-center p-3 rounded-2xl bg-blue-50/50 border border-blue-100">
+                        <span class="text-[7px] font-black text-blue-700 uppercase">Telat</span>
+                        <span class="text-[14px] font-black text-blue-600">{{ $mCounts['terlambat'] ?? 0 }}</span>
                     </div>
-                    <div class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-rose-50/50 border border-rose-100">
-                        <span class="text-[7px] font-black text-rose-700 uppercase tracking-widest">Alfa</span>
-                        <span class="text-[16px] font-black text-rose-600">
-                            {{ $materi->absensi->where('status', 'alfa')->count() }}
-                        </span>
+                    <div class="flex flex-col items-center p-3 rounded-2xl bg-amber-50/50 border border-amber-100">
+                        <span class="text-[7px] font-black text-amber-700 uppercase">S/I</span>
+                        <span class="text-[14px] font-black text-amber-600">{{ ($mCounts['izin'] ?? 0) + ($mCounts['sakit'] ?? 0) }}</span>
+                    </div>
+                    <div class="flex flex-col items-center p-3 rounded-2xl bg-rose-50/50 border border-rose-100">
+                        <span class="text-[7px] font-black text-rose-700 uppercase">Alfa</span>
+                        <span class="text-[14px] font-black text-rose-600">{{ $mCounts['alfa'] ?? 0 }}</span>
                     </div>
                 </div>
             </div>
             @empty
-            <div class="py-16 flex flex-col items-center justify-center text-center px-6 bg-white rounded-3xl border border-slate-100">
-                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
-                    <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.246.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                </div>
-                <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-widest">Belum Ada Data Jurnal</h4>
-                <p class="text-[9px] text-slate-400 mt-1">Silahkan tambahkan jurnal baru</p>
+            <div class="py-16 text-center bg-white rounded-3xl border border-slate-100">
+                <h4 class="text-[11px] font-black text-slate-500 uppercase">Belum Ada Data</h4>
             </div>
             @endforelse
         </div>
 
         {{-- Pagination --}}
-        <div class="px-6 md:px-12 py-8 md:py-10 bg-slate-50/50 border-t border-slate-50">
+        <div class="px-6 md:px-12 py-8 bg-slate-50/50 border-t border-slate-50">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                <p class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                     Showing {{ $riwayatMateri->firstItem() ?? 0 }} to {{ $riwayatMateri->lastItem() ?? 0 }} of {{ $riwayatMateri->total() ?? 0 }} Entries
                 </p>
                 <div class="pagination-premium">
@@ -248,7 +254,9 @@
                         cancelButton: 'bg-slate-500 rounded-xl px-6 py-4 font-black text-[10px] tracking-widest text-white mx-2 shadow-lg shadow-slate-100'
                     },
                     buttonsStyling: false
-                }).then((result) => { if (result.isConfirmed) form.submit(); });
+                }).then((result) => { 
+                    if (result.isConfirmed) form.submit(); 
+                });
             });
         });
     });

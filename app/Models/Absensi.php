@@ -24,14 +24,17 @@ class Absensi extends Model
     ];
 
     /**
-     * Mutator (Set)
-     * Memastikan status yang masuk ke DB selalu kapital di awal (contoh: 'hadir' jadi 'Hadir')
-     * Ini kunci agar hitungan statistik di riwayat tidak error.
+     * PENTING: Mutator & Accessor
+     * Agar sistem export dan pencarian aman, kita pastikan data di DB 
+     * disimpan dalam huruf kecil (lowercase), namun ditampilkan Kapital jika dipanggil di View.
      */
     protected function status(): Attribute
     {
         return Attribute::make(
-            set: fn (string $value) => ucfirst(strtolower($value)),
+            // Simpan ke DB sebagai 'hadir' (lowercase) agar sinkron dengan sistem export
+            set: fn (string $value) => strtolower($value),
+            // Tampilkan di view sebagai 'Hadir' (ucfirst) agar rapi di interface
+            get: fn (string $value) => ucfirst($value),
         );
     }
 
@@ -41,7 +44,7 @@ class Absensi extends Model
     public function materi()
     {
         return $this->belongsTo(Materi::class, 'materi_id')->withDefault([
-            'judul_materi' => 'Materi Terhapus',
+            'materi_kd' => 'Materi Terhapus',
             'kelas' => '-'
         ]);
     }
@@ -51,7 +54,6 @@ class Absensi extends Model
      */
     public function siswa()
     {
-        // 1. Peningkatan: Tambahkan handling jika relasi siswa tidak ditemukan
         return $this->belongsTo(Siswa::class, 'siswa_id')->withDefault([
             'nama' => 'Siswa Terhapus',
             'nis' => '-'
@@ -63,7 +65,7 @@ class Absensi extends Model
      */
     public function scopeStatus($query, $status)
     {
-        // 2. Peningkatan: Pastikan pencarian juga konsisten (kapital di awal)
-        return $query->where('status', ucfirst(strtolower($status)));
+        // Mencari dalam format lowercase sesuai penyimpanan di DB
+        return $query->where('status', strtolower($status));
     }
 }

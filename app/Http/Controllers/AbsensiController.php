@@ -11,26 +11,31 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\AbsensiExport; 
+use Maatwebsite\Excel\Facades\Excel; 
 use Carbon\Carbon;
 
 class AbsensiController extends Controller
 {
     /**
-     * TAMPILAN: Riwayat Jurnal (FILTER BULAN/TAHUN)
-     * Ditambahkan with('kelas') agar nama kelas tampil di tabel riwayat.
+     * TAMPILAN: Riwayat Jurnal (Halaman Utama Jurnal)
      */
     public function index(Request $request) 
     {
         $guru_id = Auth::guard('guru')->id();
         $periodeInput = $request->query('bulan_tahun', Carbon::today()->format('Y-m'));
-        $date = Carbon::parse($periodeInput);
+        
+        try {
+            $date = Carbon::parse($periodeInput . "-01");
+        } catch (\Exception $e) {
+            $date = Carbon::today();
+            $periodeInput = $date->format('Y-m');
+        }
 
         $riwayatMateri = Materi::where('guru_id', $guru_id)
             ->whereYear('tanggal', $date->year)
             ->whereMonth('tanggal', $date->month)
-            ->with(['kelas', 'absensi' => function($query) {
-                $query->whereIn('status', ['sakit', 'izin', 'alfa']);
-            }])
+            ->with(['kelas', 'absensi.siswa'])
             ->latest('tanggal')
             ->paginate(15)
             ->withQueryString(); 
@@ -39,109 +44,191 @@ class AbsensiController extends Controller
     }
 
     /**
-     * TAMPILAN: Rekap Absensi Bulanan (HANYA Sakit, Izin, Alfa)
+     * TAMPILAN: Rekap Absensi Bulanan (Web View)
      */
     public function rekapHarian(Request $request)
     {
         $guru_id = Auth::guard('guru')->id();
         $periodeInput = $request->query('bulan_tahun', Carbon::today()->format('Y-m'));
-        $date = Carbon::parse($periodeInput);
+        $kelasFilter = $request->query('kelas'); 
+        
+        try {
+            $date = Carbon::parse($periodeInput . "-01");
+        } catch (\Exception $e) {
+            $date = Carbon::today();
+            $periodeInput = $date->format('Y-m');
+        }
 
-        $riwayatJurnal = Materi::where('guru_id', $guru_id)
+        $query = Materi::where('guru_id', $guru_id)
             ->whereYear('tanggal', $date->year)
-            ->whereMonth('tanggal', $date->month)
-            ->with(['kelas', 'absensi' => function ($query) {
-                $query->whereIn('status', ['sakit', 'izin', 'alfa'])
-                      ->with('siswa');
-            }])
-            ->orderBy('tanggal', 'asc')
+            ->whereMonth('tanggal', $date->month);
+
+        if ($kelasFilter && $kelasFilter !== '') {
+            $query->where('kelas', $kelasFilter);
+        }
+
+        $riwayatJurnal = $query->with(['kelas', 'absensi.siswa'])
+            ->orderBy('tanggal', 'desc')
             ->get();
 
-        return view('guru.siswa.absensi', compact('riwayatJurnal', 'periodeInput', 'date'));
+        return view('guru.siswa.absensi', compact('riwayatJurnal', 'periodeInput', 'date', 'kelasFilter'));
     }
 
     /**
-     * PROSES: Cetak PDF Rekap Ketidakhadiran Bulanan
-     * FIX: Memuat relasi 'kelas' agar tidak muncul "Tanpa Kelas" di PDF.
+     * PROSES: Update Status Absensi via Modal
      */
-    public function cetakHarian(Request $request)
+    public function updateAbsensi(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|string|in:Hadir,Sakit,Izin,Terlambat,Alfa,hadir,sakit,izin,terlambat,alfa'
+        ]);
+
+        try {
+            $absensi = Absensi::whereHas('materi', function($q) {
+                $q->where('guru_id', Auth::guard('guru')->id());
+            })->findOrFail($id);
+
+            $absensi->status = strtolower($request->status);
+            $absensi->save();
+
+            return redirect()->back()->with('success', "Status absensi " . ($absensi->siswa->nama ?? '') . " berhasil diperbarui.");
+        } catch (\Exception $e) {
+            Log::error("Gagal update absensi: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui data.');
+        }
+    }
+
+    /**
+     * PROSES: Cetak PDF Rekap Bulanan (Jurnal & Absensi Lengkap)
+     */
+    public function rekapPdf(Request $request)
     {
         $guru = Auth::guard('guru')->user();
         Carbon::setLocale('id');
         
         $periodeInput = $request->query('bulan_tahun', Carbon::today()->format('Y-m'));
-        $date = Carbon::parse($periodeInput);
-
-        $riwayatJurnal = Materi::where('guru_id', $guru->id)
-            ->whereYear('tanggal', $date->year)
-            ->whereMonth('tanggal', $date->month)
-            ->with(['kelas', 'absensi' => function ($query) {
-                $query->whereIn('status', ['sakit', 'izin', 'alfa'])
-                      ->with('siswa');
-            }])
-            ->orderBy('tanggal', 'asc')
-            ->get();
-
-        if ($riwayatJurnal->isEmpty()) {
-            return redirect()->back()->with('error', 'Tidak ada data absensi untuk periode ini.');
+        $kelasFilter = $request->query('kelas');
+        
+        try {
+            $date = Carbon::parse($periodeInput . "-01");
+        } catch (\Exception $e) {
+            $date = Carbon::today();
         }
 
+        $query = Materi::where('guru_id', $guru->id)
+            ->whereYear('tanggal', $date->year)
+            ->whereMonth('tanggal', $date->month);
+
+        if ($kelasFilter && $kelasFilter !== '') {
+            $query->where('kelas', $kelasFilter);
+        }
+
+        $riwayatJurnal = $query->with(['kelas', 'absensi.siswa'])->orderBy('tanggal', 'asc')->get();
+
         $data = [
-            'title'         => 'Laporan Ketidakhadiran Siswa Bulanan',
+            'title'         => 'REKAP ABSENSI SISWA',
             'riwayatJurnal' => $riwayatJurnal,
-            'month'         => (int)$date->month,
-            'year'          => (int)$date->year,
+            'date'          => $date, 
+            'year'          => $date->year,
+            'month'         => $date->month,
             'nama_guru'     => $guru->nama,
             'nip'           => $guru->nip ?? '-',
-            'tanggal'       => $periodeInput
+            'periode'       => $date->translatedFormat('F Y'),
+            'kelas'         => $kelasFilter ?? 'Semua Kelas'
         ];
 
-        return Pdf::loadView('guru.absensi.pdf', $data)
-                    ->setPaper('a4', 'portrait')
-                    ->stream("Ketidakhadiran_Bulanan_".$periodeInput.".pdf");
+        return Pdf::loadView('guru.absensi.rekap_pdf', $data)
+                    ->setPaper('a4', 'landscape') 
+                    ->stream("Rekap_Absensi_".$periodeInput.".pdf");
     }
 
     /**
-     * PROSES: Cetak PDF Rekap Jurnal Mengajar Bulanan
+     * PROSES: Cetak PDF Khusus Absensi (Ketidakhadiran Siswa)
+     * Ditujukan untuk file view: resources/views/guru/absensi/pdf.blade.php
      */
-    public function cetakPdf(Request $request)
+    public function absensiPdf(Request $request)
     {
         $guru = Auth::guard('guru')->user();
         Carbon::setLocale('id');
         
         $periodeInput = $request->query('bulan_tahun', Carbon::today()->format('Y-m'));
-        $date = Carbon::parse($periodeInput);
+        $kelasFilter = $request->query('kelas');
+        
+        try {
+            $date = Carbon::parse($periodeInput . "-01");
+        } catch (\Exception $e) {
+            $date = Carbon::today();
+        }
 
-        $riwayatJurnal = Materi::where('guru_id', $guru->id)
+        $query = Materi::where('guru_id', $guru->id)
             ->whereYear('tanggal', $date->year)
-            ->whereMonth('tanggal', $date->month)
-            ->with(['kelas', 'absensi' => function($query) {
-                $query->whereIn('status', ['sakit', 'izin', 'alfa'])->with('siswa');
-            }])
+            ->whereMonth('tanggal', $date->month);
+
+        if ($kelasFilter && $kelasFilter !== '') {
+            $query->where('kelas', $kelasFilter);
+        }
+
+        $riwayatJurnal = $query->with(['kelas', 'absensi.siswa'])
             ->orderBy('tanggal', 'asc')
             ->get();
 
-        if ($riwayatJurnal->isEmpty()) {
-            return redirect()->back()->with('error', 'Tidak ada data jurnal untuk periode ini');
-        }
-        
         $data = [
-            'title'         => 'Laporan Jurnal Mengajar Bulanan',
-            'riwayatJurnal' => $riwayatJurnal, 
+            'title'         => 'LAPORAN KETIDAKHADIRAN SISWA',
+            'riwayatJurnal' => $riwayatJurnal,
+            'date'          => $date, 
+            'year'          => $date->year,
+            'month'         => $date->month,
             'nama_guru'     => $guru->nama,
             'nip'           => $guru->nip ?? '-',
-            'month'         => (int)$date->month,
-            'year'          => (int)$date->year,
+            'periode'       => $date->translatedFormat('F Y'),
+            'kelas'         => $kelasFilter ?? 'Semua Kelas'
         ];
 
         return Pdf::loadView('guru.absensi.pdf', $data)
-                    ->setPaper('a4', 'portrait')
-                    ->download("Rekap_Jurnal_Bulanan_".$periodeInput.".pdf");
+                    ->setPaper('a4', 'portrait') 
+                    ->stream("Laporan_Absensi_".$periodeInput.".pdf");
     }
 
     /**
-     * PROSES: Simpan Jurnal & Absensi
-     * FIX: Menambahkan pencarian kelas_id agar data tersimpan secara relasional.
+     * PROSES: Export Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $guru_id = Auth::guard('guru')->id();
+        $periodeInput = $request->query('bulan_tahun', Carbon::today()->format('Y-m'));
+        $kelasFilter = $request->query('kelas');
+
+        try {
+            $date = Carbon::parse($periodeInput . "-01");
+        } catch (\Exception $e) {
+            $date = Carbon::today();
+        }
+
+        $dataSiswa = Siswa::whereHas('absensi.materi', function($q) use ($guru_id, $date) {
+                $q->where('guru_id', $guru_id)
+                  ->whereYear('tanggal', $date->year)
+                  ->whereMonth('tanggal', $date->month);
+            })
+            ->when($kelasFilter, function($q) use ($kelasFilter) {
+                return $q->whereHas('kelas', function($k) use ($kelasFilter) {
+                    $k->where('nama_kelas', $kelasFilter);
+                });
+            })
+            ->with(['absensi' => function($q) use ($date, $guru_id) {
+                $q->whereYear('tanggal', $date->year)
+                  ->whereMonth('tanggal', $date->month)
+                  ->whereHas('materi', function($m) use ($guru_id) {
+                      $m->where('guru_id', $guru_id);
+                  });
+            }, 'kelas'])
+            ->get();
+
+        $fileName = 'Rekap_Absensi_' . ($kelasFilter ?? 'Semua_Kelas') . '_' . $periodeInput . '.xlsx';
+        return Excel::download(new AbsensiExport($dataSiswa), $fileName);
+    }
+
+    /**
+     * PROSES: Simpan Jurnal & Absensi (Input Harian)
      */
     public function storeJurnal(Request $request)
     {
@@ -157,18 +244,17 @@ class AbsensiController extends Controller
             DB::beginTransaction();
             $tanggalHariIni = Carbon::today()->toDateString();
 
-            // Cari ID Kelas berdasarkan nama yang dikirim dari form
             $kelas = Kelas::where('nama_kelas', $request->kelas)->first();
-            if (!$kelas) throw new \Exception("Kelas $request->kelas tidak ditemukan di database.");
+            if (!$kelas) throw new \Exception("Kelas $request->kelas tidak ditemukan.");
 
             $materi = Materi::create([
                 'guru_id'               => Auth::guard('guru')->id(),
-                'kelas_id'              => $kelas->id, // Menyimpan Foreign Key
+                'kelas_id'              => $kelas->id,
                 'materi_kd'             => $request->materi_kd,
                 'kegiatan_pembelajaran' => $request->kegiatan_pembelajaran,
                 'evaluasi'              => $request->evaluasi,
                 'mata_pelajaran'        => $request->mata_pelajaran,
-                'kelas'                 => $request->kelas, // String backup
+                'kelas'                 => $request->kelas,
                 'tanggal'               => $tanggalHariIni,
             ]);
 
@@ -178,13 +264,13 @@ class AbsensiController extends Controller
             foreach ($semuaSiswa as $siswa) {
                 $status = 'hadir';
                 if ($request->has('absen') && isset($request->absen[$siswa->id])) {
-                    $status = $request->absen[$siswa->id];
+                    $status = strtolower($request->absen[$siswa->id]);
                 }
 
                 $dataAbsensi[] = [
                     'materi_id'  => $materi->id,
                     'siswa_id'   => $siswa->id,
-                    'status'     => strtolower($status), 
+                    'status'     => $status, 
                     'tanggal'    => $tanggalHariIni,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -206,82 +292,54 @@ class AbsensiController extends Controller
     }
 
     /**
-     * PROSES: Update Status Absensi per Siswa (MODAL EDIT)
-     */
-    public function updateAbsensi(Request $request, $id)
-    {
-        $request->validate([
-            'status' => 'required|in:Sakit,Izin,Alfa,Hadir,sakit,izin,alfa,hadir'
-        ]);
-
-        try {
-            $absensi = Absensi::findOrFail($id);
-            $namaSiswa = $absensi->siswa->nama ?? 'Siswa';
-            
-            $absensi->status = strtolower($request->status);
-            $absensi->save();
-
-            $statusText = ucfirst(strtolower($request->status));
-            return redirect()->back()->with('success', "Status $namaSiswa berhasil diubah menjadi $statusText.");
-        } catch (\Exception $e) {
-            Log::error("Gagal update absensi ID $id: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memperbarui data.');
-        }
-    }
-
-    /**
-     * TAMPILAN: Pilih Kelas
+     * TAMPILAN: Pilih Kelas sebelum Absen
      */
     public function selectClass()
     {
         $guru = Auth::guard('guru')->user();
         $kelasDiampu = is_array($guru->kelas) ? $guru->kelas : explode(',', $guru->kelas);
         $kelasDiampu = array_map('trim', $kelasDiampu);
-
+        
         return view('guru.absensi.select', compact('kelasDiampu'));
     }
 
     /**
-     * TAMPILAN: Form Input Absensi
+     * TAMPILAN: Form Input Absensi & Jurnal
      */
     public function create(Request $request)
     {
         $request->validate(['kelas' => 'required|string']);
-
         $kelas_nama = trim($request->kelas);
+        
         $kelas = Kelas::where('nama_kelas', $kelas_nama)->first();
+        if (!$kelas) return redirect()->back()->with('error', "Data kelas tidak ditemukan.");
 
-        if (!$kelas) {
-            return redirect()->back()->with('error', "Data kelas $kelas_nama tidak ditemukan.");
-        }
-
-        $siswas = Siswa::where('kelas_id', $kelas->id)
-                        ->orderBy('nama', 'asc')
-                        ->get();
-
+        $siswas = Siswa::where('kelas_id', $kelas->id)->orderBy('nama', 'asc')->get();
+        
         return view('guru.absensi.index', [
-            'siswas' => $siswas,
+            'siswas'     => $siswas,
             'kelas_nama' => $kelas_nama,
-            'kelas_id' => $kelas->id 
+            'kelas_id'   => $kelas->id 
         ]);
     }
 
     /**
-     * PROSES: Hapus Jurnal
+     * PROSES: Hapus Jurnal & Absensi Terkait
      */
     public function destroy($id)
     {
         try {
-            $materi = Materi::where('id', $id)
-                            ->where('guru_id', Auth::guard('guru')->id())
-                            ->firstOrFail();
+            DB::beginTransaction();
+            $materi = Materi::where('id', $id)->where('guru_id', Auth::guard('guru')->id())->firstOrFail();
             
             Absensi::where('materi_id', $id)->delete();
             $materi->delete();
-
+            
+            DB::commit();
             return redirect()->back()->with('success', 'Riwayat jurnal berhasil dihapus.');
         } catch (\Exception $e) {
-            Log::error("Gagal hapus jurnal $id: " . $e->getMessage());
+            DB::rollBack();
+            Log::error("Gagal hapus jurnal: " . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal menghapus data.');
         }
     }

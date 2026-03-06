@@ -200,7 +200,7 @@
         </div>
 
         <footer class="text-center p-6 text-[10px] text-slate-400 font-medium tracking-widest uppercase">
-            &copy; {{ date('Y') }} IT SMKN 43 Jakarta
+            &copy; {{ date('Y') }} RPL SMKN 43 Jakarta
         </footer>
     </main>
 

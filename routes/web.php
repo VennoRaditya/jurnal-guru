@@ -9,6 +9,12 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KelasController;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
 // --- REDIRECT UTAMA ---
 Route::get('/', function () {
     if (auth()->guard('guru')->check()) {
@@ -79,37 +85,34 @@ Route::prefix('guru')->group(function () {
     Route::middleware('auth:guru')->group(function () {
         Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('guru.dashboard');
 
-        // --- ABSENSI & SISWA ---
-        Route::prefix('siswa')->name('guru.absensi.')->group(function() {
-            Route::get('/absensi', [AbsensiController::class, 'rekapHarian'])->name('rekap');
-            Route::put('/absensi/rekap/update/{id}', [AbsensiController::class, 'updateAbsensi'])->name('update');
-            Route::get('/cetak-harian', [AbsensiController::class, 'cetakHarian'])->name('cetakHarian');
-            Route::get('/cetak-pdf', [AbsensiController::class, 'cetakPdf'])->name('cetakPdf');
-            
-            // Fix error: guru.absensi.select
-            Route::get('/pilih-kelas', [AbsensiController::class, 'selectClass'])->name('select');
-        });
-
-        // --- PRESENSI & JURNAL INPUT ---
-        Route::prefix('presensi')->name('guru.presensi.')->group(function () {
+        // --- MANAJEMEN ABSENSI (INPUT, REKAP & EXPORT) ---
+        Route::prefix('absensi')->name('guru.absensi.')->group(function() {
+            // Input Presensi Baru
             Route::get('/pilih-kelas', [AbsensiController::class, 'selectClass'])->name('select');
             Route::get('/isi-jurnal', [AbsensiController::class, 'create'])->name('create');
             Route::post('/store', [AbsensiController::class, 'storeJurnal'])->name('storeJurnal');
+
+            // Rekap & Update
+            Route::get('/rekap', [AbsensiController::class, 'rekapHarian'])->name('rekap');
+            Route::put('/update/{id}', [AbsensiController::class, 'updateAbsensi'])->name('update');
+            
+            // Cetak & Export
+            Route::get('/export-excel', [AbsensiController::class, 'exportExcel'])->name('exportExcel');
+            Route::get('/rekap-pdf', [AbsensiController::class, 'rekapPdf'])->name('rekapPdf'); 
+            Route::get('/cetak-portrait', [AbsensiController::class, 'absensiPdf'])->name('absensiOnlyPdf'); 
         });
 
-        // --- RIWAYAT & MANAJEMEN MATERI ---
-        Route::get('/riwayat-materi', [MateriController::class, 'index'])->name('guru.materi.index');
-        Route::get('/rekap-mingguan/download', [MateriController::class, 'downloadRekap'])->name('guru.rekap.download');
-        
-        Route::prefix('materi-manage')->name('guru.materi.')->group(function () {
-            // Sesuai tombol "Input Jurnal Baru" dan "Cetak PDF" di dashboard
-            Route::get('/create', [AbsensiController::class, 'selectClass'])->name('create');
-            Route::get('/cetak', [AbsensiController::class, 'cetakPdf'])->name('cetak');
-            
+        // ALIAS UNTUK MENGATASI ERROR (guru.presensi.select)
+        Route::get('/presensi/pilih-kelas', [AbsensiController::class, 'selectClass'])->name('guru.presensi.select');
+
+        // --- MANAJEMEN MATERI / RIWAYAT JURNAL ---
+        Route::prefix('materi')->name('guru.materi.')->group(function () {
+            Route::get('/', [AbsensiController::class, 'index'])->name('index'); 
+            Route::get('/cetak', [AbsensiController::class, 'rekapPdf'])->name('cetak'); 
             Route::get('/{id}', [MateriController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [MateriController::class, 'edit'])->name('edit'); 
             Route::put('/{id}', [MateriController::class, 'update'])->name('update'); 
-            Route::delete('/{id}', [MateriController::class, 'destroy'])->name('destroy'); 
+            Route::delete('/{id}', [AbsensiController::class, 'destroy'])->name('destroy'); 
         });
 
         Route::post('/logout', [GuruAuthController::class, 'logout'])->name('guru.logout');

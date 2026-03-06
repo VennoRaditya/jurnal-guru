@@ -35,7 +35,6 @@
 
     <form action="{{ route('guru.presensi.storeJurnal') }}" method="POST" class="space-y-8" id="formPresensi">
         @csrf
-        {{-- Pastikan kelas_nama ada, jika tidak, bisa menyebabkan error validasi di server --}}
         <input type="hidden" name="kelas" value="{{ $kelas_nama ?? '' }}">
 
         {{-- BAGIAN 1: JURNAL PEMBELAJARAN --}}
@@ -100,7 +99,7 @@
                     <thead>
                         <tr class="bg-slate-50/50">
                             <th class="pl-12 pr-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Siswa</th>
-                            <th class="px-6 py-5 text-[10px] font-black text-center text-slate-400 uppercase tracking-[0.25em]">Ketidakhadiran (S/I/A)</th>
+                            <th class="px-6 py-5 text-[10px] font-black text-center text-slate-400 uppercase tracking-[0.25em]">Ketidakhadiran (S/I/T/A)</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -119,11 +118,11 @@
                             </td>
                             <td class="px-6 py-5">
                                 <div class="flex items-center justify-center gap-2">
-                                    {{-- PERUBAHAN: Tombol Hadir Dihapus, Siswa default Hadir --}}
                                     @foreach([
-                                        'sakit' => ['bg-amber-500', 'S'], 
-                                        'izin'  => ['bg-blue-500', 'I'], 
-                                        'alfa'  => ['bg-rose-500', 'A']
+                                        'sakit'     => ['bg-amber-500', 'S'], 
+                                        'izin'      => ['bg-blue-500', 'I'], 
+                                        'terlambat' => ['bg-indigo-500', 'T'], 
+                                        'alfa'      => ['bg-rose-500', 'A']
                                     ] as $status => $attr)
                                         <label class="relative cursor-pointer">
                                             <input type="radio" name="absen[{{ $siswa->id }}]" value="{{ $status }}" 
@@ -166,11 +165,11 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-4 gap-2 pt-2 border-t border-slate-100">
-                        {{-- PERUBAHAN: Tombol Hadir Dihapus (Mobile) --}}
                         @foreach([
-                            'sakit' => ['bg-amber-500', 'S'], 
-                            'izin'  => ['bg-blue-500', 'I'], 
-                            'alfa'  => ['bg-rose-500', 'A']
+                            'sakit'     => ['bg-amber-500', 'S'], 
+                            'izin'      => ['bg-blue-500', 'I'], 
+                            'terlambat' => ['bg-indigo-500', 'T'], 
+                            'alfa'      => ['bg-rose-500', 'A']
                         ] as $status => $attr)
                             <label class="relative cursor-pointer group">
                                 <input type="radio" name="absen[{{ $siswa->id }}]" value="{{ $status }}" 

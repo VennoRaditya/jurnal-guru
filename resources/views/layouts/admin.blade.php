@@ -70,7 +70,7 @@
                     </div>
                     <div>
                         <h1 class="text-xl font-black tracking-tighter text-white italic">
-                            ADMIN<span class="text-blue-500 animate-pro">PRO</span>
+                            ADMIN<span class="text-blue-500 animate-pro">PANEL</span>
                         </h1>
                         <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] leading-tight mt-1">
                             SMKN 43 JAKARTA

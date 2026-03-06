@@ -173,7 +173,7 @@
 
         <footer class="mt-auto sm:mt-10 pt-8 text-center">
             <p class="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em]">
-                &copy; 2026 IT SMKN 43 Jakarta
+                &copy; 2026 RPL SMKN 43 Jakarta
             </p>
         </footer>
 

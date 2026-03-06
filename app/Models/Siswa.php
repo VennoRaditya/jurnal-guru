@@ -25,10 +25,11 @@ class Siswa extends Model
     }
 
     /**
-     * PENTING: Relasi ke model Absensi
-     * Tanpa ini, fitur hitung rekap S/I/A di Controller/PDF akan error.
+     * Relasi ke model Absensi
+     * Nama fungsi diubah menjadi 'absensi' (tanpa s) agar sinkron dengan:
+     * $siswa->absensi->where(...) di Controller dan Export.
      */
-    public function absensis()
+    public function absensi()
     {
         return $this->hasMany(Absensi::class, 'siswa_id');
     }
