@@ -33,7 +33,7 @@
             overflow-x: hidden;
         }
 
-        /* --- GLOBAL LOADER CSS --- */
+        /* --- GLOBAL LOADER --- */
         #global-loader {
             display: flex;
             position: fixed;
@@ -92,10 +92,10 @@
 
         .no-scroll { overflow: hidden !important; }
 
-        /* Smooth Modal */
+        /* Modal Base */
         .modal-container {
-            transition: all 0.3s ease-in-out;
             display: none;
+            transition: all 0.3s ease-in-out;
         }
         .modal-container.active {
             display: flex;
@@ -171,7 +171,7 @@
                     <p class="text-[9px] font-bold text-slate-400 tracking-widest uppercase mt-0.5 truncate">{{ Auth::guard('guru')->user()->mapel }}</p>
                 </div>
             </div>
-            <button type="button" onclick="openLogoutModal()" class="w-full flex justify-center items-center gap-2 bg-slate-900 text-white py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-600 transition-all active:scale-95 shadow-lg shadow-slate-200">
+            <button type="button" onclick="openLogoutModal()" class="w-full flex justify-center items-center gap-2 bg-slate-900 text-white py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-rose-600 transition-all active:scale-95 shadow-lg shadow-slate-200">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 Logout
             </button>
@@ -204,28 +204,32 @@
         </footer>
     </main>
 
-    <div id="logoutModal" class="modal-container fixed inset-0 z-100 items-center justify-center opacity-0 transition-all duration-300">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeLogoutModal()"></div>
-        <div class="bg-white rounded-4xl p-8 m-4 shadow-2xl relative z-10 w-full max-w-sm transform scale-95 transition-all duration-300" id="logoutModalContent">
+    <div id="logoutModal" class="modal-container fixed inset-0 z-[100] items-center justify-center opacity-0 pointer-events-none transition-all duration-300">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeLogoutModal()"></div>
+        <div class="bg-white rounded-[2.5rem] p-10 m-4 shadow-[0_20px_50px_rgba(0,0,0,0.15)] relative z-10 w-full max-w-[380px] transform scale-90 transition-all duration-300 border border-slate-50" id="logoutModalContent">
             <div class="flex flex-col items-center text-center">
-                <div class="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center mb-6 text-rose-600">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <div class="relative mb-8">
+                    <div class="absolute inset-0 bg-rose-500 rounded-3xl rotate-12 opacity-10 animate-pulse"></div>
+                    <div class="w-20 h-20 rounded-3xl bg-rose-50 flex items-center justify-center text-rose-500 relative z-10">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                    </div>
                 </div>
-                <h3 class="text-xl font-black text-slate-900 mb-2">Akhiri Sesi?</h3>
-                <p class="text-sm text-slate-500 mb-8 leading-relaxed">Pastikan semua laporan jurnal dan presensi Anda telah tersimpan.</p>
-                <div class="flex flex-col gap-3 w-full">
-                    <form action="{{ route('guru.logout') }}" method="POST" class="w-full">
+                <h3 class="text-2xl font-extrabold text-slate-900 mb-2">Sudah Selesai?</h3>
+                <p class="text-[13px] font-medium text-slate-500 mb-10 leading-relaxed px-4">Pastikan semua catatan jurnal dan presensi siswa hari ini telah tersimpan.</p>
+                <div class="grid grid-cols-1 gap-3 w-full">
+                    <form action="{{ route('guru.logout') }}" method="POST" class="w-full order-1">
                         @csrf
-                        <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-600 transition-all active:scale-95 shadow-lg">Ya, Logout</button>
+                        <button type="submit" class="w-full bg-rose-500 text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-rose-600 active:scale-95 transition-all shadow-xl shadow-rose-200">Ya, Akhiri Sesi</button>
                     </form>
-                    <button onclick="closeLogoutModal()" class="w-full bg-slate-100 text-slate-600 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Kembali</button>
+                    <button onclick="closeLogoutModal()" class="w-full bg-slate-100 text-slate-600 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 active:scale-95 transition-all order-2">Nanti Saja</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. SELEKTOR ELEMENT ---
         const ui = {
             loader: document.getElementById('global-loader'),
             sidebar: document.getElementById('sidebar'),
@@ -235,56 +239,32 @@
             body: document.body
         };
 
-        // --- 2. GLOBAL LOADER LOGIC ---
+        // --- Loader Logic ---
         const hideLoader = () => {
-            if (!ui.loader) return;
-            ui.loader.classList.add('loader-hidden');
-            ui.body.classList.remove('no-scroll');
+            if (ui.loader) {
+                ui.loader.classList.add('loader-hidden');
+                ui.body.classList.remove('no-scroll');
+            }
         };
-        
         const showLoader = () => {
-            if (!ui.loader) return;
-            ui.loader.classList.remove('loader-hidden');
-            ui.body.classList.add('no-scroll');
+            if (ui.loader) {
+                ui.loader.classList.remove('loader-hidden');
+                ui.body.classList.add('no-scroll');
+            }
         };
 
-        // Inisialisasi Loader saat load awal
-        window.addEventListener('load', () => {
-            setTimeout(hideLoader, 300); // Delay halus
-        });
+        window.addEventListener('load', () => setTimeout(hideLoader, 300));
+        setTimeout(hideLoader, 8000); // Safety timeout
 
-        // Safety timeout (maksimal 8 detik loading)
-        setTimeout(hideLoader, 8000);
-
-        // Loader Navigasi (Hanya untuk link internal)
         document.addEventListener('click', (e) => {
             const link = e.target.closest('a');
             if (!link) return;
-
             const href = link.getAttribute('href');
-            const target = link.getAttribute('target');
-
-            // Abaikan jika link kosong, link anchor (#), atau link JS
-            if (!href || href.startsWith('#') || href.startsWith('javascript') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
-            
-            // Abaikan jika target _blank atau download
-            if (target === '_blank' || link.hasAttribute('download')) return;
-
-            // Tampilkan loader jika domain tujuan sama (internal link)
-            if (link.hostname === window.location.hostname) {
-                showLoader();
-            }
+            if (!href || href.startsWith('#') || href.startsWith('javascript') || link.getAttribute('target') === '_blank') return;
+            if (link.hostname === window.location.hostname) showLoader();
         });
 
-        // Loader Form (Hanya post yang bukan modal logout)
-        document.addEventListener('submit', (e) => {
-            const form = e.target;
-            if (form.getAttribute('method')?.toUpperCase() === 'POST' && !form.closest('#logoutModal')) {
-                showLoader();
-            }
-        });
-
-        // --- 3. SIDEBAR LOGIC ---
+        // --- Sidebar Logic ---
         function toggleSidebar() {
             const isHidden = ui.sidebar.classList.contains('-translate-x-full');
             if (isHidden) {
@@ -301,35 +281,31 @@
         }
         ui.overlay.addEventListener('click', toggleSidebar);
 
-        // --- 4. MODAL LOGIC ---
+        // --- Modal Logout Logic ---
         function openLogoutModal() {
-            ui.logoutModal.classList.add('active');
+            ui.logoutModal.classList.add('active', 'flex');
+            ui.logoutModal.classList.remove('pointer-events-none');
             ui.body.classList.add('no-scroll');
             setTimeout(() => {
                 ui.logoutModal.classList.add('opacity-100');
-                ui.logoutModalContent.classList.remove('scale-95');
+                ui.logoutModalContent.classList.remove('scale-90');
                 ui.logoutModalContent.classList.add('scale-100');
-            }, 10);
+            }, 50);
         }
 
         function closeLogoutModal() {
             ui.logoutModal.classList.remove('opacity-100');
             ui.logoutModalContent.classList.remove('scale-100');
-            ui.logoutModalContent.classList.add('scale-95');
+            ui.logoutModalContent.classList.add('scale-90');
             setTimeout(() => {
-                ui.logoutModal.classList.remove('active');
+                ui.logoutModal.classList.remove('active', 'flex');
+                ui.logoutModal.classList.add('pointer-events-none');
                 ui.body.classList.remove('no-scroll');
             }, 300);
         }
 
-        // Tutup modal via tombol Esc
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && ui.logoutModal.classList.contains('active')) closeLogoutModal();
-        });
-
-        // Tangani tombol Back Browser agar loader hilang
-        window.addEventListener('pageshow', (event) => {
-            if (event.persisted) hideLoader();
         });
     </script>
 </body>

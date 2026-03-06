@@ -49,7 +49,6 @@
             font-size: 9pt; 
         }
 
-        /* PERBAIKAN: Gunakan auto agar kolom menyesuaikan isi jika memungkinkan */
         .table-data { 
             width: 100%; 
             border-collapse: collapse; 
@@ -59,30 +58,28 @@
         .table-data th, .table-data td { 
             border: 1px solid #000; 
             padding: 5px 3px; 
-            word-wrap: break-word; /* Memastikan kata panjang pecah ke bawah */
+            word-wrap: break-word; 
         }
 
-        /* Atur lebar minimal agar angka tetap rapi */
-        .col-no { width: 20px; }
-        .col-nis { width: 65px; }
-        .col-stat { width: 25px; }
-        .col-total { width: 35px; }
+        .col-no { width: 25px; }
+        .col-nis { width: 70px; }
+        .col-stat { width: 30px; }
+        .col-total { width: 40px; }
 
         .table-data th { 
             background-color: #f2f2f2; 
             text-transform: uppercase; 
-            font-size: 7pt; 
+            font-size: 7.5pt; 
             text-align: center; 
         }
         
         .text-center { text-align: center; }
-        /* Font nama dibuat sedikit lebih fleksibel */
         .nama-siswa { 
             text-align: left; 
             padding-left: 5px !important; 
             font-size: 8.5pt; 
-            white-space: normal; /* Memperbolehkan teks turun ke baris baru */
-            line-height: 1;
+            white-space: normal; 
+            line-height: 1.1;
         }
         
         .font-bold { font-weight: bold; }
@@ -140,23 +137,26 @@
     @php
         $dataPerKelas = [];
         foreach($riwayatJurnal as $jurnal) {
-            $namaKelas = is_object($jurnal->kelas) ? $jurnal->kelas->nama_kelas : ($jurnal->kelas ?: 'Tanpa Kelas');
+            $namaKelas = is_object($jurnal->class) ? $jurnal->class->nama_kelas : ($jurnal->kelas ?: 'Tanpa Kelas');
+            
             if($jurnal->absensi) {
                 foreach($jurnal->absensi as $abs) {
+                    $siswaId = $abs->siswa_id;
                     $status = trim(strtolower($abs->status));
-                    if($status !== 'hadir') {
-                        $siswaId = $abs->siswa_id;
-                        if(!isset($dataPerKelas[$namaKelas][$siswaId])) {
-                            $dataPerKelas[$namaKelas][$siswaId] = [
-                                'nis' => $abs->siswa->nis ?? '-',
-                                'nama' => $abs->siswa->nama ?? 'Siswa Terhapus',
-                                'sakit' => 0, 'izin' => 0, 'alfa' => 0, 'terlambat' => 0, 'total' => 0
-                            ];
-                        }
-                        if(isset($dataPerKelas[$namaKelas][$siswaId][$status])) {
-                            $dataPerKelas[$namaKelas][$siswaId][$status]++;
-                            $dataPerKelas[$namaKelas][$siswaId]['total']++;
-                        }
+
+                    // Inisialisasi data siswa (agar SEMUA siswa masuk daftar)
+                    if(!isset($dataPerKelas[$namaKelas][$siswaId])) {
+                        $dataPerKelas[$namaKelas][$siswaId] = [
+                            'nis' => $abs->siswa->nis ?? '-',
+                            'nama' => $abs->siswa->nama ?? 'Siswa Terhapus',
+                            'sakit' => 0, 'izin' => 0, 'alfa' => 0, 'terlambat' => 0, 'total' => 0
+                        ];
+                    }
+
+                    // Hanya tambahkan ke hitungan jika statusnya bukan 'hadir'
+                    if($status !== 'hadir' && isset($dataPerKelas[$namaKelas][$siswaId][$status])) {
+                        $dataPerKelas[$namaKelas][$siswaId][$status]++;
+                        $dataPerKelas[$namaKelas][$siswaId]['total']++;
                     }
                 }
             }
@@ -192,7 +192,7 @@
                             <td class="text-center">{{ $data['izin'] ?: '-' }}</td>
                             <td class="text-center">{{ $data['alfa'] ?: '-' }}</td>
                             <td class="text-center">{{ $data['terlambat'] ?: '-' }}</td>
-                            <td class="text-center font-bold">{{ $data['total'] }}</td>
+                            <td class="text-center font-bold">{{ $data['total'] ?: 0 }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -218,4 +218,4 @@
     </table>
 
 </body>
-</html> 
+</html>
